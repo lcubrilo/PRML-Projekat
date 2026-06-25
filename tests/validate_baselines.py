@@ -31,6 +31,7 @@ print("== integration (composed pipelines) ==")
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from src.baselines import PCA, GaussianClassifier, KNNClassifier, LDAProjection
+from src.extension import SAMMEClassifier
 
 X, y = load_iris(return_X_y=True)
 Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.3, random_state=0, stratify=y)
@@ -49,6 +50,10 @@ check("PCA(2) -> QDA pipeline", acc_pca > 0.9, f"acc={acc_pca:.3f}")
 l = LDAProjection(n_components=2).fit(Xtr, ytr)
 acc_lda = KNNClassifier(k=5).fit(l.transform(Xtr), ytr).score(l.transform(Xte), yte)
 check("LDAProjection(2) -> kNN pipeline", acc_lda > 0.9, f"acc={acc_lda:.3f}")
+
+# PCA (fit on train) -> SAMME extension (the from-scratch extension on reduced features)
+acc_samme = SAMMEClassifier(n_estimators=50).fit(p.transform(Xtr), ytr).score(p.transform(Xte), yte)
+check("PCA(2) -> SAMME pipeline", acc_samme > 0.9, f"acc={acc_samme:.3f}")
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

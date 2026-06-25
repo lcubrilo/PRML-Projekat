@@ -87,7 +87,9 @@ class DecisionStump:
         np.ndarray, shape (n_samples,) - encoded labels: `left_class` where
         x[feature_index] <= threshold, else `right_class`.
         """
-        ...
+        # just apply the best one found in fit
+        left_mask = X[:, self.feature_index] <= self.threshold
+        return np.where(left_mask, self.left_class, self.right_class)
 
 
 class SAMMEClassifier:
@@ -133,8 +135,38 @@ class SAMMEClassifier:
         -------
         self
         """
-        self.classes_, y_enc = np.unique(y, return_inverse=True)
-        ...
+        self.classes_, y_enc = np.unique(y, return_inverse=True) # sorted classes indexed (we use indeces later on)
+        self.K_ = len(self.classes_)
+        n_samples = X.shape[0]
+
+        w = np.ones(n_samples) / n_samples # start with uniform probabilities, they'll be updated over time
+        self.stumps_, self.alphas_ = [], []
+
+        for _ in range(self.n_estimators):
+            stump = DecisionStump().fit(X, y_enc, w) # primitive learner
+            misses = stump.predict(X) != y_enc
+            err = (w * misses).sum() / w.sum() # weighted and normalized error 
+
+            # this is the generalization over adaboost - not looking if bigger than 1/2, but if bigger than k-1/k
+            if err >= (self.K_ - 1) / self.K_: 
+                break # this stump is literally worse than random chance
+
+            if err == 0: # if perfect
+                self.stumps_.append(stump)
+                self.alphas_.append(np.log((1 - 1e-10) / 1e-10) + np.log(self.K_ - 1)) # to avoid div by 0, use absurdly small number
+                break # can't be better than this
+            
+            # last added term is also generalization over adaboost
+            alpha = np.log((1-err)/err) + np.log(self.K_-1) 
+            # alpha says how important this stump is - less error it has, more important it is and viceversa
+            
+            w = w * np.exp(alpha * misses) # give more weight for next iteration to those who were wrong the last time
+            w = w / w.sum() # normalize weights
+
+            self.stumps_.append(stump)
+            self.alphas_.append(alpha)
+        
+        return self
 
     def _decision_scores(self, X: np.ndarray) -> np.ndarray:
         """Aggregate the ensemble's votes - shared by predict and predict_proba,
@@ -145,7 +177,13 @@ class SAMMEClassifier:
         np.ndarray, shape (n_samples, K) - entry [i, k] is the summed alpha of
         the stumps that voted class k for sample i.
         """
-        ...
+        n_samples = X.shape[0]
+        scores = np.zeros((n_samples, self.K_))
+        for stump, alpha in zip(self.stumps_, self.alphas_):
+            pred = stump.predict(X)
+            scores[np.arange(n_samples), pred] += alpha
+
+        return scores
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Argmax over the decision scores, mapped back to original labels.
@@ -154,7 +192,7 @@ class SAMMEClassifier:
         -------
         np.ndarray, shape (n_samples,) - values drawn from self.classes_.
         """
-        ...
+        return self.classes_[np.argmax(self._decision_scores(X), axis=1)]
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """Normalise the decision scores so each row sums to 1.
@@ -166,8 +204,9 @@ class SAMMEClassifier:
         -------
         np.ndarray, shape (n_samples, K) - rows non-negative and sum to 1.
         """
-        ...
+        scores = self._decision_scores(X)
+        return scores / scores.sum(axis=1, keepdims=True)
 
     def score(self, X: np.ndarray, y: np.ndarray) -> float:
         """Mean accuracy of predict(X) against y."""
-        ...
+        return (self.predict(X) == y).mean()
