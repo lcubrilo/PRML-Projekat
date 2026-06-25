@@ -1,7 +1,7 @@
 """From-scratch baseline implementations, ported from the course materials
 (`Project context/course_materials/`).
 
-These are the *primary* implementations for the project — external libraries
+These are the *primary* implementations for the project - external libraries
 (sklearn, etc.) are used ONLY to validate these (see `tests/`), never as the
 source of a reported result.
 

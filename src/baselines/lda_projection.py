@@ -1,4 +1,4 @@
-"""Fisher LDA as *dimensionality reduction* — ported from `10_lda`.
+"""Fisher LDA as *dimensionality reduction* - ported from `10_lda`.
 
 Distinct from the LDA *classifier* in `gaussian.py` (shared-covariance Gaussian):
 this is the supervised projection that maximizes between/within-class scatter

@@ -1,4 +1,4 @@
-"""k-Nearest Neighbors — ported from `course_materials/08_knn/8_kNN_solution.ipynb`.
+"""k-Nearest Neighbors - ported from `course_materials/08_knn/8_kNN_solution.ipynb`.
 
 The core functions (`euclidean_distance`, `manhattan_distance`, `knn_predict_point`,
 `knn_predict`) are the course implementations, kept faithful. `KNNClassifier` is a

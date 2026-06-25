@@ -1,4 +1,4 @@
-"""Generative Gaussian classifiers — Naive Bayes / LDA / QDA.
+"""Generative Gaussian classifiers - Naive Bayes / LDA / QDA.
 
 Generalizes the course's 2-class GDA (`05_quadratic_classifiers`: `predict_gda`,
 which scores each class by N(x; mu_c, Sigma_c)*prior_c and takes the argmax) to

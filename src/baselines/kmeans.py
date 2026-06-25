@@ -1,4 +1,4 @@
-"""k-means — ported from `11_clustering/11_clustering_solution.ipynb` (faithful),
+"""k-means - ported from `11_clustering/11_clustering_solution.ipynb` (faithful),
 plus a thin sklearn-style wrapper. The KMeans++ extension (if chosen) will
 subclass/replace `initialize_centroids` only.
 
@@ -58,7 +58,7 @@ def kmeans_objective(X, labels, centroids):
 
 class KMeans:
     """sklearn-style wrapper. `n_init` restarts keep the lowest-inertia run
-    (vanilla k-means is seed-sensitive — this is what k-means++ improves on)."""
+    (vanilla k-means is seed-sensitive - this is what k-means++ improves on)."""
 
     def __init__(self, k=3, max_iters=50, n_init=10, seed=0):
         self.k = k

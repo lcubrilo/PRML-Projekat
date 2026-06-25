@@ -1,9 +1,9 @@
-"""Linear regression — ported from `02_linear_regression` and `03_least_squares`.
+"""Linear regression - ported from `02_linear_regression` and `03_least_squares`.
 
 Covers the two course routes that the project may compare:
   - closed-form normal equation  (course `direct_solution` / `least_squares_solution`)
   - batch gradient descent       (course `gradient_descent`, vectorized)
-  - ridge (L2) closed form       (course `ridge_solution`) — bias not penalized.
+  - ridge (L2) closed form       (course `ridge_solution`) - bias not penalized.
 
 A bias column is added internally. Primary implementation; sklearn used only in tests.
 """

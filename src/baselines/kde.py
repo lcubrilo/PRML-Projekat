@@ -1,4 +1,4 @@
-"""Kernel Density Estimation + a Parzen-window classifier — from `07_kde`.
+"""Kernel Density Estimation + a Parzen-window classifier - from `07_kde`.
 
 NOTE: the course `07_kde` notebook is the *un-solved* version; its `kde_estimate`
 has the `n` vs `len(samples)` bug the TA flagged on Moodle, `silverman_bandwidth`

@@ -1,4 +1,4 @@
-"""Linear discriminant classifiers — ported from `03_least_squares`.
+"""Linear discriminant classifiers - ported from `03_least_squares`.
 
 Perceptron (single-sample), Ho–Kashyap, and the least-squares/MSE classifier.
 All use the course's augment-and-normalize trick (append 1, negate class 2),

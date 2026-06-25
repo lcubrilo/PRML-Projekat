@@ -1,10 +1,10 @@
-"""PCA — ported from `09_pca/9_PCA_solution.ipynb`.
+"""PCA - ported from `09_pca/9_PCA_solution.ipynb`.
 
 Course recipe: center → covariance (Xc.T @ Xc / n) → eigendecomposition →
 sort eigenpairs descending → project / reconstruct → explained-variance ratio.
 The course used np.linalg.eig (its own comment hints '# eigh'); since the
 covariance is symmetric we use np.linalg.eigh (real spectrum, more stable) and
-reverse to descending order — same result, cleaner numerics.
+reverse to descending order - same result, cleaner numerics.
 
 Primary implementation; sklearn used only in tests.
 """
