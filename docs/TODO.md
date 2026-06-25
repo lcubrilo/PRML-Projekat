@@ -5,11 +5,36 @@ Owner in **(L / M / both)**. Background/why for most items is in [CLAUDE.md](../
 
 ---
 
-## Decisions still open (resolve, or take to the TA)
-- [?] **Target shape:** *joint* winner×method (one 6-class model: red/blue × KO/Sub/Dec) **vs** *cascade* (predict winner, then method). Both keep the odds benchmark. → fine to ask the TA. **(both)**
-- [?] **Extension:** **SAMME-AdaBoost** (leaning — multiclass AdaBoost, good to learn) **vs** Random Forest (native multiclass, feature importance). **(both)**
-- [?] **Weird outcomes** (DQ / No-Contest / Overturned / Draw, + 238 rows with unknown method): keep as a 7th **"other"** class **vs** drop them. Note: the 238 "unknown method" rows had a real KO/Sub/Dec just unrecorded — could be recovered by joining rajeevw/komaksym. **(both)**
-- [?] **Logistic regression** as an extra baseline — is it "covered"? It uses the course's gradient descent but isn't its own course topic. Ask TA or skip. **(L or M)**
+## Decisions — LOCKED (TA approved 2026-06-25)
+- [x] **Target:** one **joint 6-class** model (winner × method). (TA: cascade has complications the course didn't cover.)
+- [x] **Extension:** **SAMME** (TA preference).
+- [x] **Baselines:** **LDA, QDA, kNN** (TA: 1-3, with justification → `report/baselines_chosen.md`).
+- [x] **Weird outcomes:** **dropped** (rare, not meaningfully predictable; explained in the report).
+- [x] **Split:** chronological ~80/20. **Logistic regression:** not used (enough baselines).
+- ⚠️ **Deadline = tomorrow; no late commits accepted.** Out of scope (TA: nothing beyond the proposal): nationality scrape, fight-metric regression.
+
+## Assignments & priorities (live mirror = GitHub issues)
+P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones (E/G) are tentative and can be reshuffled.
+
+| Issue | Task | Prio | Owner |
+|---|---|---|---|
+| [#2](https://github.com/lcubrilo/PRML-Projekat/issues/2) | B1 load + 6-class label | P0 | **Milica** |
+| [#3](https://github.com/lcubrilo/PRML-Projekat/issues/3) | B2 features | P0 | **Milica** |
+| [#4](https://github.com/lcubrilo/PRML-Projekat/issues/4) | B3 symmetrize | P0 | **Milica** |
+| [#5](https://github.com/lcubrilo/PRML-Projekat/issues/5) | B4 split + scale | P0 | **Milica** |
+| [#10](https://github.com/lcubrilo/PRML-Projekat/issues/10) | D2 SAMME from scratch | P0 | **Luka** |
+| [#6](https://github.com/lcubrilo/PRML-Projekat/issues/6) | C1 EDA distributions | P0 | **Luka** |
+| [#13](https://github.com/lcubrilo/PRML-Projekat/issues/13) | E1 metrics | P0 | **Luka** |
+| [#9](https://github.com/lcubrilo/PRML-Projekat/issues/9) | D1 run baselines | P0 | **Luka** |
+| [#16](https://github.com/lcubrilo/PRML-Projekat/issues/16) | G1 report | P0 | both |
+| [#7](https://github.com/lcubrilo/PRML-Projekat/issues/7) | C2 red-corner confound | P1 | Luka |
+| [#12](https://github.com/lcubrilo/PRML-Projekat/issues/12) | D4 odds benchmark | P1 | Luka |
+| [#14](https://github.com/lcubrilo/PRML-Projekat/issues/14) | E2 hyperparam sweeps | P1 | Luka (tentative) |
+| [#11](https://github.com/lcubrilo/PRML-Projekat/issues/11) | D3 naive baselines | P1 | Milica |
+| [#17](https://github.com/lcubrilo/PRML-Projekat/issues/17) | G2 slides (last) | P1 | both (tentative) |
+| [#8](https://github.com/lcubrilo/PRML-Projekat/issues/8) | C3 leakage check | P2 | Luka |
+| [#15](https://github.com/lcubrilo/PRML-Projekat/issues/15) | E3 DR ablation | P2 | Milica (tentative) |
+| [#18](https://github.com/lcubrilo/PRML-Projekat/issues/18) | G3 README | P2 | Milica (tentative) |
 
 ## Already done (so nobody redoes it)
 - [x] Datasets downloaded + inspected; leakage audited → [DATASETS.md](DATASETS.md). Primary = `mdabbert/ufc-master.csv`.
@@ -46,10 +71,8 @@ Owner in **(L / M / both)**. Background/why for most items is in [CLAUDE.md](../
 - [ ] **E2.** **Hyperparameter sweeps** with plots (k for kNN; n_estimators/depth for the extension; PCA dimensions). **(both)**
 - [ ] **E3.** **Dim-reduction ablation:** does PCA / LDA-projection help vs full features? + a 2D projection plot coloured by method. **(M)**
 
-### F. Optional (only after the core works)
-- [ ] **F1.** Nationality enrichment — scrape per fighter (Sherdog/Wikipedia/Tapology); ablation "does it add signal beyond stats?". Note: mdabbert's `country` is event-location, not nationality. **(either)**
-- [ ] **F2.** Fight-metric **regression** (sig. strikes / TD / control time) as a secondary analysis. **(either)**
-- [ ] **F3.** Port minor course extras if useful (polynomial regression already added; cost-sensitive Bayes). **(either)**
+### F. Out of scope (TA: nothing beyond the proposal; deadline tomorrow)
+- ~~F1 nationality scrape~~ · ~~F2 fight-metric regression~~ — cut. Don't start these.
 
 ### G. Deliverables  → depends on E
 - [ ] **G1.** Report (intro · problem · dataset · baselines · extension · setup · results · analysis · conclusions). **(both)**

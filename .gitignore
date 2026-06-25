@@ -218,7 +218,13 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Project datasets (large, re-fetchable — see DATASETS.md)
-data/raw/
+# Ignore raw downloads, but commit the pinned primary file (mdabbert, ~3 MB)
+# for zero-setup reproducibility of reported results.
+data/raw/*
+!data/raw/mdabbert/
+data/raw/mdabbert/*
+!data/raw/mdabbert/ufc-master.csv
+!data/raw/mdabbert/SOURCE.txt
 data/processed/
 
 # Claude Code local config (AI tooling)

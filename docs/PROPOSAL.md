@@ -20,7 +20,7 @@ The TA's six points aren't in decision order. The actual dependency chain:
 
 | # | Point | Status | Current |
 |---|---|---|---|
-| a | Dataset(s) | 🟡 | **`mdabbert/ufc-master.csv`** (verified: target + pre-fight features + odds). |
+| a | Dataset(s) | ✅ | **`mdabbert/ufc-master.csv`** (verified: target + pre-fight features + odds; committed/pinned in repo). |
 | b | Problem formulation | 🟡 | **Method of victory + winner** — joint (6-class) **or** cascade (open). |
 | c | Baselines | ✅ | Bayes, LDA, QDA, kNN (+ linear floor) — implemented & validated (`src/baselines/`). |
 | d | Extension | 🟡 | **SAMME-AdaBoost** leaning (RF not ruled out). |
@@ -56,3 +56,4 @@ The TA's six points aren't in decision order. The actual dependency chain:
 - **2026-06-25:** Data inspected — per-method odds exist ⇒ method-of-victory keeps the market benchmark. Baseline module complete (13/13 vs sklearn). _(Claude)_
 - **2026-06-25:** Include **who won** (not method-only) — joint winner×method **or** cascade (open; may ask TA). Extension = **SAMME-AdaBoost** *leaning* (learn the multiclass variant for broader value); **RF not ruled out** (soft preference only). Weird outcomes (DQ/CNC/Overturned/NC/Draw + missing-method) → leaning **keep as a 7th "other" class** per Luka (vs drop) — caveat: it's a noisy grab-bag the model won't predict well; the 238 missing-method rows had a real method that's just unrecorded (could recover via join). Nationality (`country` col is event-location, not fighter nationality → needs scrape) + fight-metric regression = optional secondary, gated behind the core. _(Luka)_
 - **2026-06-25:** mdabbert leakage audit done — must-exclude `total_fight_time_secs` (current-fight duration) + target cols; rest pre-fight safe. Tests reorganized (units + integration runner, 15/15). _(Claude)_
+- **2026-06-25:** Dataset **finalized = `mdabbert/ufc-master.csv`** (point a → ✅). Audited the four remaining lineage mirrors (rajaisrarkiani/cadelueker/neelagiriaditya/fatismajli) → all confirmed redundant (no odds/nationality, in-fight stats, fighter table already local). Pinned snapshot committed to repo for reproducibility. _(Claude)_
