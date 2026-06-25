@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project datasets (large, re-fetchable — see DATASETS.md)
+data/raw/
+data/processed/
+
+# Claude Code local config (AI tooling)
+.claude/
+
+# Course materials
+Project context/course_materials/

@@ -1,0 +1,9 @@
+# Core (our from-scratch code only needs numpy)
+numpy
+pandas
+matplotlib
+# Validation / comparison ONLY (never for reported results) + notebooks
+scikit-learn
+jupyter
+# Optional: unit tests also run standalone (python tests/unit/test_*.py) without this
+pytest
