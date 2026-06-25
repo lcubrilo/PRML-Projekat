@@ -46,9 +46,38 @@ class DecisionStump:
         self
         """
         n_samples, n_features = X.shape
-            
+        K = int(y.max()) + 1
+        best_error = np.inf
 
-        ...
+        for feature in range(n_features):
+            col = X[:, feature]
+            uniq = np.unique(col)
+            if uniq.size < 2: # how to find threshold if we only have 1 unique value?
+                continue # try a different column
+
+            thresholds = (uniq[:-1] + uniq[1:]) / 2.0 # all possible thresholds i.e between any unique values
+
+            for threshold in thresholds:
+                left_mask = col <= threshold # gives us which rows in our column are below threshold
+
+                # we count how many instances of each class we found for those left of threshold and those right of it
+                # but weighted by importance
+                # we say minlength=K to allow 0s for unrepresented classes, so no shifting of indeces happens
+                left_w = np.bincount(y[left_mask], weights=sample_weight[left_mask], minlength=K)
+                right_w = np.bincount(y[~left_mask], weights=sample_weight[~left_mask], minlength=K)
+
+                left_class, right_class = int(np.argmax(left_w)), int(np.argmax(right_w)) # find left's and right's most prominent class 
+
+                pred = np.where(left_mask, left_class, right_class) # just two predictions, (2 most prominents)
+                error = sample_weight[pred != y].sum() # count up how many misses we had, but weighted
+
+                # we find best feature/threshold pair for current dataset+weights
+                if error < best_error:
+                    best_error = error
+                    self.feature_index, self.threshold = feature, float(threshold)
+                    self.left_class, self.right_class = left_class, right_class
+        
+        return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Apply the stored split.
