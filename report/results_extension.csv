@@ -1,0 +1,2 @@
+model,acc6_mean,acc6_std,winner_mean,winner_std,method_mean,logloss_mean
+SAMME,0.349,0.012,0.633,0.016,0.515,1.663

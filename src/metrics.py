@@ -114,3 +114,13 @@ def summarize_over_seeds(values):
     """Mean and population std over repeated runs. Returns (mean, std)."""
     v = np.asarray(values, dtype=float)
     return float(v.mean()), float(v.std())
+
+
+def collapse_winner(labels):
+    """Map joint 'Red-KO'/'Blue-DEC'... labels down to the winner ('Red'/'Blue')."""
+    return np.array([str(s).split("-")[0] for s in labels])
+
+
+def collapse_method(labels):
+    """Map joint labels down to the method ('KO'/'SUB'/'DEC')."""
+    return np.array([str(s).split("-")[1] for s in labels])

@@ -2,7 +2,7 @@
 
 > **CHOSEN DATASET (final): `mdabbert/ufc-master.csv`.** One file carries the `finish`/`Winner` targets, pre-fight aggregate features, and betting odds (moneyline + per-method props) - see [the rationale](#implications-for-the-project-decision-verified). This snapshot is **committed to the repo** (`data/raw/mdabbert/ufc-master.csv`, ~3 MB, pinned for reproducibility); all other downloads stay gitignored.
 
-Findings from actually downloading/inspecting the data (Claude task). Status: ✅ verified locally · 📄 verified from source code/docs (not the CSV) · ⬜ unverified.
+Findings from actually downloading/inspecting the data. Status: ✅ verified locally · 📄 verified from source code/docs (not the CSV) · ⬜ unverified.
 
 Local copies live in `data/raw/` (gitignored, **except** the committed `mdabbert/ufc-master.csv`). Re-fetch: see commands at the bottom.
 

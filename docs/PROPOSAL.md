@@ -8,7 +8,7 @@ Status legend: ✅ decided · 🟡 leaning · ⬜ open.
 
 The TA's six points aren't in decision order. The actual dependency chain:
 
-1. **Inspect the data first** (what columns even exist) - gates everything; a formulation is impossible if its target/columns aren't there. *(Claude task)*
+1. **Inspect the data first** (what columns even exist) - gates everything; a formulation is impossible if its target/columns aren't there.
 2. **Problem formulation (b)** - *binds everything below.* Choose task type.
 3. **Approach framing** - one of the TA's five (likely "baselines vs modern extensions").
 4. **Dataset file (a)** - constrained by (b) + the odds decision (`mdabbert` if odds, else `rajeevw`).
@@ -53,9 +53,21 @@ The TA's six points aren't in decision order. The actual dependency chain:
 2. **Extension:** resolved → SAMME.
 3. **Nationality enrichment:** resolved → out of scope (cut; see TODO.md section F).
 
+## Methodology decisions & alternatives considered
+Implementation-stage choices, each with the alternative we could revisit if there is time.
+
+- **Corner handling:** symmetrize the **train** set only and evaluate on the **original-corner** test (so models, always-red and the market are all scored on the same fights). *Alternative:* also score on a symmetrized 50/50 test for a "pure skill" number - dropped as more confusing than useful; could revisit.
+- **QDA in high dimensions:** regularized (`reg=1.0`); unregularized it is ill-conditioned in ~114 dims (log-loss ~11). It still trails LDA. *Alternative / next:* PCA before QDA (the E3 ablation) - expected to help more than regularization alone.
+- **Dimensionality:** full feature set for the headline run. *Alternative:* PCA / LDA-projection for all models (E3) to test whether DR rescues QDA/kNN.
+- **Debut flag (`R_is_debut`/`B_is_debut`):** added so the "no track record" signal is not erased by median/zero imputation; **no measurable gain** on the baselines, kept for completeness. *Alternative:* drop it.
+- **SAMME stump speed:** candidate splits capped at ~64 quantile thresholds (≈5x faster, negligible accuracy cost). *Alternatives:* exhaustive thresholds (exact, slow) or a vectorized cumulative-sum sweep (fastest, larger rewrite).
+- **Imputation:** train-only median (fit on train, applied to test), leakage-safe. The global median fill in `make_features` stays available via `impute=True` for standalone use.
+- **Evaluation:** 6-class metrics plus winner/method collapses; market benchmarked by log-loss / Brier. **Seed-averaging:** 3 symmetrization seeds for now; more once the stump is faster.
+- **Cost-sensitive loss** (partial credit for right-winner-wrong-method): not implemented. *Possible future:* decision-time Bayes-risk with a winner/method cost matrix; report standard and cost-sensitive separately.
+
 ## Decision log
 - **2026-06-25:** Leaning **method-of-victory** (b); **odds = benchmark**. Dataset → mdabbert. _(Luka)_
-- **2026-06-25:** Data inspected - per-method odds exist ⇒ method-of-victory keeps the market benchmark. Baseline module complete (13/13 vs sklearn). _(Claude)_
+- **2026-06-25:** Data inspected - per-method odds exist ⇒ method-of-victory keeps the market benchmark. Baseline module complete (13/13 vs sklearn). _(Luka)_
 - **2026-06-25:** Include **who won** (not method-only) - joint winner×method **or** cascade (open; may ask TA). Extension = **SAMME-AdaBoost** *leaning* (learn the multiclass variant for broader value); **RF not ruled out** (soft preference only). Weird outcomes (DQ/CNC/Overturned/NC/Draw + missing-method) → leaning **keep as a 7th "other" class** per Luka (vs drop) - caveat: it's a noisy grab-bag the model won't predict well; the 238 missing-method rows had a real method that's just unrecorded (could recover via join). Nationality (`country` col is event-location, not fighter nationality → needs scrape) + fight-metric regression = optional secondary, gated behind the core. _(Luka)_
-- **2026-06-25:** mdabbert leakage audit done - must-exclude `total_fight_time_secs` (current-fight duration) + target cols; rest pre-fight safe. Tests reorganized (units + integration runner, 15/15). _(Claude)_
-- **2026-06-25:** Dataset **finalized = `mdabbert/ufc-master.csv`** (point a → ✅). Audited the four remaining lineage mirrors (rajaisrarkiani/cadelueker/neelagiriaditya/fatismajli) → all confirmed redundant (no odds/nationality, in-fight stats, fighter table already local). Pinned snapshot committed to repo for reproducibility. _(Claude)_
+- **2026-06-25:** mdabbert leakage audit done - must-exclude `total_fight_time_secs` (current-fight duration) + target cols; rest pre-fight safe. Tests reorganized (units + integration runner, 15/15). _(Luka)_
+- **2026-06-25:** Dataset **finalized = `mdabbert/ufc-master.csv`** (point a → ✅). Audited the four remaining lineage mirrors (rajaisrarkiani/cadelueker/neelagiriaditya/fatismajli) → all confirmed redundant (no odds/nationality, in-fight stats, fighter table already local). Pinned snapshot committed to repo for reproducibility. _(Luka)_

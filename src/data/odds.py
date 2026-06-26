@@ -28,7 +28,9 @@ def american_to_prob(odds) -> np.ndarray:
     +150 -> 0.40, -150 -> 0.60, +100/-100 -> 0.50. NaNs propagate.
     """
     odds = np.asarray(odds, dtype=float)
-    with np.errstate(invalid="ignore"):
+    # np.where evaluates both branches, so the unused branch can divide by zero for the
+    # +100/-100 edge; suppress - np.where keeps the correct side.
+    with np.errstate(divide="ignore", invalid="ignore"):
         return np.where(odds > 0, 100.0 / (odds + 100.0), -odds / (-odds + 100.0))
 
 

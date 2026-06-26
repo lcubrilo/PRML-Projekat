@@ -55,6 +55,11 @@ class DecisionStump:
             if uniq.size < 2: # how to find threshold if we only have 1 unique value?
                 continue # try a different column
 
+            # continuous columns have thousands of unique values -> thousands of scans per
+            # feature. cap to ~64 quantile cut points: tiny accuracy cost, ~100x faster.
+            if uniq.size > 64:
+                uniq = np.unique(np.quantile(uniq, np.linspace(0, 1, 65)))
+
             thresholds = (uniq[:-1] + uniq[1:]) / 2.0 # all possible thresholds i.e between any unique values
 
             for threshold in thresholds:
