@@ -9,7 +9,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 import numpy as np
 import pandas as pd
 
-from src.data.odds import american_to_prob, devig, moneyline_market, method_market
+from src.data.odds import (american_to_prob, devig, moneyline_market, method_market,
+                           market_benchmark)
 
 CSV = os.path.join(os.path.dirname(__file__), '..', '..',
                    'data', 'raw', 'mdabbert', 'ufc-master.csv')
@@ -65,6 +66,22 @@ def test_method_market_reindex_to_model_classes():
     m = method_market(df, classes=classes)
     assert list(m.columns) == classes                 # lines up with model.classes_
     assert np.allclose(m.dropna().sum(axis=1), 1.0)
+
+
+def test_market_benchmark_scores_and_drops_uncovered():
+    classes = ["A", "B", "C"]
+    rng = np.random.default_rng(0)
+    y = np.array(["A", "B", "C", "A", "B"])
+    # a confident, correct model
+    model = np.array([[.8, .1, .1], [.1, .8, .1], [.1, .1, .8],
+                      [.7, .2, .1], [.2, .7, .1]])
+    # market: uniform on covered fights, one fight (index 4) has no coverage (NaN)
+    market = np.full((5, 3), 1 / 3)
+    market[4] = np.nan
+    out = market_benchmark(y, model, market, classes)
+    assert out["n_fights"] == 4                      # the NaN fight is dropped
+    assert out["log_loss"]["model"] < out["log_loss"]["market"]   # we beat uniform here
+    assert out["brier"]["model"] < out["brier"]["market"]
 
 
 if __name__ == '__main__':

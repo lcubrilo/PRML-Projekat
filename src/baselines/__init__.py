@@ -27,6 +27,7 @@ from .linear import LinearRegression, polynomial_features
 from .linear_classifiers import PerceptronClassifier, HoKashyapClassifier, LeastSquaresClassifier
 from .kde import ParzenClassifier, kde_estimate, silverman_bandwidth
 from .lda_projection import LDAProjection
+from .naive import MajorityClassifier, ConstantClassifier
 
 __all__ = [
     "KNNClassifier", "knn_predict", "euclidean_distance", "manhattan_distance",
@@ -37,4 +38,5 @@ __all__ = [
     "PerceptronClassifier", "HoKashyapClassifier", "LeastSquaresClassifier",
     "ParzenClassifier", "kde_estimate", "silverman_bandwidth",
     "LDAProjection",
+    "MajorityClassifier", "ConstantClassifier",
 ]

@@ -70,3 +70,42 @@ def method_market(df: pd.DataFrame, classes=None) -> pd.DataFrame:
     P = devig(np.column_stack([american_to_prob(df[METHOD_ODDS_COLS[c]]) for c in labels]))
     out = pd.DataFrame(P, index=df.index, columns=labels)
     return out.reindex(columns=list(classes)) if classes is not None else out
+
+
+def market_benchmark(y_true, model_proba, market_proba, classes) -> dict:
+    """Score our model against the de-vigged market on the SAME fights.
+
+    Both forecasters output a probability over `classes`, so we compare them by
+    log-loss and Brier (the proper scoring rules for probabilistic forecasts).
+    Only fights with full market coverage are used: rows where `market_proba` has
+    any NaN are dropped from BOTH sides so the comparison is on identical fights.
+
+    Parameters
+    ----------
+    y_true : array of true labels, length n.
+    model_proba : (n, K) array, columns aligned to `classes` (model.predict_proba).
+    market_proba : (n, K) array or DataFrame from `method_market(df, classes=...)`.
+    classes : the class order both probability matrices use.
+
+    Returns
+    -------
+    dict with 'log_loss' and 'brier' sub-dicts, each holding 'model' and 'market',
+    plus 'n_fights' actually scored.
+    """
+    from src.metrics import log_loss, brier_score
+
+    y_true = np.asarray(y_true)
+    model_proba = np.asarray(model_proba, dtype=float)
+    market_proba = np.asarray(market_proba, dtype=float)
+
+    covered = ~np.isnan(market_proba).any(axis=1)
+    yt = y_true[covered]
+    m_model = model_proba[covered]
+    m_market = market_proba[covered]
+    return {
+        "log_loss": {"model": log_loss(yt, m_model, classes=classes),
+                     "market": log_loss(yt, m_market, classes=classes)},
+        "brier": {"model": brier_score(yt, m_model, classes=classes),
+                  "market": brier_score(yt, m_market, classes=classes)},
+        "n_fights": int(covered.sum()),
+    }
