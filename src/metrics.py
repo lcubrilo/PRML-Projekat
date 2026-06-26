@@ -92,6 +92,22 @@ def _average_ranks(x):
     return ranks
 
 
+def roc_curve(y_true_binary, scores):
+    """FPR, TPR for a binary problem as the threshold sweeps (for plotting an ROC curve).
+
+    `y_true_binary` is 1 for the positive class, 0 otherwise; `scores` is the predicted
+    score/probability of the positive class. Returns (fpr, tpr), each starting at (0, 0).
+    """
+    scores = np.asarray(scores, dtype=float)
+    y = np.asarray(y_true_binary, dtype=int)
+    order = np.argsort(-scores, kind="mergesort")
+    y = y[order]
+    P, N = int(y.sum()), int((1 - y).sum())
+    tpr = np.concatenate([[0.0], np.cumsum(y) / max(P, 1)])
+    fpr = np.concatenate([[0.0], np.cumsum(1 - y) / max(N, 1)])
+    return fpr, tpr
+
+
 def roc_auc_ovr(y_true, proba, classes=None) -> float:
     """Macro one-vs-rest ROC-AUC via the Mann-Whitney rank statistic (ties averaged)."""
     proba = np.asarray(proba, dtype=float)

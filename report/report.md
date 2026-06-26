@@ -147,16 +147,24 @@ bullets into 2-3 paragraphs. Delete this comment and the "(confirm/write: ...)" 
 
 All numbers below are the mean over three symmetrization seeds, on the chronological original-corner test set (1,382 fights; the market benchmark uses the 1,099 with full per-method odds). Models are scored on the full six-class target and, for comparison against the reference baselines, collapsed to the winner (Red/Blue) and the method (KO/SUB/DEC).
 
-| Model | 6-class acc | winner acc | method acc | log-loss |
-|---|---|---|---|---|
-| **SAMME (extension)** | **0.349** | **0.633** | 0.515 | 1.663 |
-| LDA | 0.343 | 0.626 | 0.516 | 1.592 |
-| QDA (reg) | 0.230 | 0.567 | 0.371 | 3.134 |
-| kNN (k=15) | 0.282 | 0.550 | 0.497 | 3.642 |
-| majority class | 0.266 | 0.521 | 0.514 | 1.702 |
-| always-red (reference) | - | 0.562 | - | - |
-| coin flip (reference) | - | 0.500 | - | - |
-| betting market (reference) | - | - | - | 1.551 |
+All accuracies, macro-F1 and ROC-AUC are over the six-class target (ROC-AUC is one-vs-rest, macro-averaged); winner and method are the collapsed views.
+
+| Model | 6-class acc | winner acc | method acc | macro-F1 | ROC-AUC | log-loss |
+|---|---|---|---|---|---|---|
+| **SAMME (extension)** | **0.349** | **0.633** | 0.515 | 0.297 | **0.698** | 1.663 |
+| LDA | 0.343 | 0.626 | 0.516 | **0.315** | 0.685 | 1.592 |
+| QDA (reg) | 0.230 | 0.567 | 0.371 | 0.220 | 0.624 | 3.134 |
+| kNN (k=15) | 0.282 | 0.550 | 0.497 | 0.221 | 0.595 | 3.642 |
+| majority class | 0.266 | 0.521 | 0.514 | 0.070 | 0.500 | 1.702 |
+| always-red (reference) | - | 0.562 | - | - | - | - |
+| coin flip (reference) | - | 0.500 | - | - | - | - |
+| betting market (reference) | - | - | - | - | - | 1.551 |
+
+Here **macro-F1** is the unweighted average of the six per-class F1 scores (each F1 being the harmonic mean of that class's precision and recall), so every class counts equally and ignoring the rare ones is penalized; **ROC-AUC** (one-vs-rest, macro-averaged) measures how well each class is *ranked* above the rest, where 0.5 is random and 1.0 is perfect. The macro-F1 and ROC-AUC corroborate the headline tie: SAMME has the best ROC-AUC (0.698) and LDA the best macro-F1 (0.315), the two effectively level while QDA, kNN and the majority baseline trail on every column. The low macro-F1 across the board reflects the rare submission classes, which all models recover poorly (see the confusion matrix), and the ROC-AUCs near 0.6-0.7 confirm only modest separability, consistent with a near-ceiling problem.
+
+![Macro-F1 and one-vs-rest ROC-AUC by model on the six-class target. SAMME and LDA lead and are effectively level (SAMME best ROC-AUC, LDA best macro-F1); QDA, kNN and the majority baseline trail. Low macro-F1 reflects the rarely-recovered submission classes.](figures/metrics_f1_auc.png)
+
+![Winner (Red vs Blue) ROC curves: each model's true-positive rate against its false-positive rate as the decision threshold sweeps, with the area under the curve (AUC) in the legend and the dashed diagonal marking a random classifier. SAMME and LDA bow furthest toward the top-left; all sit only modestly above the diagonal, the visual signature of a near-ceiling problem. (This is the binary winner task, so these AUCs differ from the six-class macro ROC-AUC in the table above.)](figures/roc_curves.png)
 
 **The extension ties the best baseline.** SAMME reaches 0.633 winner accuracy and LDA 0.626; the gap is smaller than the seed-to-seed standard deviation (about 0.01-0.02), so the 200-stump ensemble and the single linear discriminant are, for practical purposes, equal. Both land squarely in the published ~63-67% winner-prediction ceiling and clearly beat the always-red baseline (0.562) and a coin flip.
 
@@ -166,7 +174,7 @@ All numbers below are the mean over three symmetrization seeds, on the chronolog
 
 **Convergence and overfitting.** SAMME's test accuracy peaks at around round 113 and drifts slightly down by round 200, so the ensemble mildly overfits past its sweet spot - a textbook boosting curve.
 
-![SAMME test accuracy by boosting round: it peaks near round 113 and drifts down by round 200, a textbook mild-overfitting curve.](figures/hyperparam_samme.png)
+![SAMME train vs test accuracy by boosting round: training accuracy keeps climbing while test accuracy peaks near round 110-130 and drifts down by 200. The widening train-test gap is textbook mild overfitting (mild because depth-1 stumps are weak learners).](figures/hyperparam_samme.png)
 
 The confusion matrices tell the same story for the extension and the best baseline: predictions concentrate on the two common decision classes (Red-DEC and Blue-DEC), so knockouts and especially submissions are recovered far less often. SAMME, for instance, recovers Red-DEC outcomes 51% of the time but Blue-SUB only 14%.
 
@@ -192,6 +200,8 @@ The kNN k-sweep is the remaining E2 item.
 
 **Does the extension beat the baselines, and is the complexity worth it?** No. SAMME reaches 0.633 winner accuracy and LDA 0.626, a gap smaller than the seed-to-seed variation, so a 200-stump boosting ensemble and a single linear discriminant perform equally. The natural reading is that the relationship between the pre-fight difference features and the outcome is close to linear: there is little non-linear structure for boosting to exploit, so its extra capacity does not translate into accuracy. For this problem the simpler model is preferable on every axis except, marginally, probability calibration.
 
+![Decision regions of each model, re-fit on the two most predictive features (illustrative 2D stand-in, not the full 114-D model). LDA draws a straight boundary, QDA a gentle curve, kNN ragged local pockets, and SAMME axis-aligned boxes (its decision stumps). The heavy Red/Blue overlap is why winner accuracy stays near the ceiling regardless of model family.](figures/decision_regions.png)
+
 **Does dimensionality reduction help?** Also no, and informatively so. The PCA scree curve is flat: it takes 50 of the 114 components to capture 90% of the variance, so there is no compact low-dimensional structure to recover. Reducing to a PCA subspace leaves QDA essentially unchanged (0.566 against 0.567 at full dimension) and improves kNN only marginally (0.562 against 0.550), and neither approaches LDA. So the weakness of QDA and kNN is not a conditioning problem that DR can fix; it is that their inductive biases (per-class covariance, local neighbourhoods) do not suit data whose signal is spread thinly and roughly linearly across many features. This answers a natural question, "would PCA or regularization rescue the flexible methods?", and the answer is no.
 
 **How close are we to the ceiling and the market?** Our winner accuracy of about 0.63 sits inside the published 63-67% range, and against the de-vigged betting market we reach a log-loss of 1.66 versus the market's 1.55. The market remains the stronger forecaster, but the gap is small (about 12% more probability mass on the true outcome, on average). We approach but do not beat the practical ceiling, which is the expected outcome: the market aggregates sharp money and information we do not have.
@@ -211,6 +221,8 @@ We set out to see how close a fully from-scratch pipeline could get to the pract
 **Future work.** The clearest direction is to enrich the feature set with information our dataset simply does not carry. ufcstats and its derivatives describe *what* fighters did in the cage but say almost nothing about *who* they are - in particular **nationality, gym/team and martial-arts base** are absent. These map onto some of the sport's most discussed narratives (the Dagestani wrestling pipeline, the Brazilian jiu-jitsu lineage, and so on), and testing whether such background actually carries predictive signal would be a genuinely interesting study. Doing it properly would mean **building a new dataset**: scraping bios from sources like Tapology or Sherdog and joining them onto the ufcstats fight records, effectively stitching multiple sources into one - which is why we scoped it out of this project rather than attempting it under a deadline.
 
 Other framings we discussed and set aside, each able to stand as its own project, include: a **regression** target (predicting fight duration, significant strikes landed, or control time - the only framing that would exercise a linear-regression baseline); **finish vs. decision** ("does the fight go the distance?") and **round of finish** as alternative classification targets; **fight-type clustering** (grappling- vs. striking-heavy bouts); a dedicated **scorecard / judging** model (JudgeAI-style, which would need komaksym's parsed scorecards); **upset detection**; and the fighter **style-clustering** study mentioned in Section 1.1.
+
+A further refinement we did not pursue is **cost-sensitive learning**. The six classes are not equally costly to confuse: mistaking `Red-KO` for `Red-DEC` still gets the winner right, whereas mistaking `Red-DEC` for `Blue-DEC` does not. A cost matrix that gives partial credit for a correct winner but wrong method, applied either at decision time via Bayes risk over the predicted probabilities or baked into the boosting objective (AdaCost-style), could trade a little method accuracy for better winner accuracy and is a natural next step given our joint target.
 
 ## References - ✅ drafted
 
