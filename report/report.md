@@ -1,29 +1,8 @@
-<!--
-REPORT STRUCTURE STUB. Sections map 1:1 to the TA brief's required report contents
-(introduction, problem, dataset, baselines, extension, setup, results, analysis,
-conclusions) plus the brief's expected outputs (EDA, hyperparameter analysis,
-visualizations, discussion).
-
-Single file on purpose: the report must read as one document, and we are two authors.
-Each section notes what goes in it and which notebook/issue/file feeds it.
-Language: ENGLISH (decided).
-Plots: saved to report/figures/ via `src.plotting.save_fig("name")`, referenced below as
-figures/name.png. These image files may not exist yet; what each plot SHOWS gets written
-once we see the actual plot.
-Convert to PDF at the end (e.g. pandoc, which embeds the figures/*.png).
-
-SECTION-STATUS TAGS after each heading (e.g. "- ✅ drafted") are working notes: STRIP
-them before the final PDF. Legend:
-  ✅ drafted (good enough for now)   🟡 partial   ⬜ stub, writable now   ⏳ stub, waiting on data/results
--->
-
 # Comparative Study of Classical Classifiers and a Multiclass Boosting Extension for Predicting UFC Fight Outcomes (Winner and Method)
 
 *Luka Čubrilo, Milica Cvetić. PMF UNS, Pattern Recognition and Machine Learning*
 
-> Authoring split (by domain): **Milica** = Section 3 Dataset, Section 5.1 Baselines, Section 6 Experimental setup (factual / mechanical). **Luka** = Section 1 Intro, Section 2 Problem, Section 4 EDA, Section 8 Analysis, Section 9 Conclusions (domain / narrative). Section 5.2 Extension and Section 7 Results: shared.
-
-## 1. Introduction - ✅ drafted (sufficient)
+## 1. Introduction
 
 The Ultimate Fighting Championship (UFC) is the world's largest mixed martial arts (MMA) organization, having hosted thousands of fights between fighters drawn from virtually every country on the planet over the last few decades. From controversial and humble beginnings, it has grown into one of the most-watched combat-sports promotions globally, frequently discussed alongside mainstream leagues like the NBA, F1 and FIFA in terms of viewership, popularity and cultural impact.
 
@@ -36,17 +15,14 @@ Fundamentally, this means fight outcomes cannot be predicted much better than a 
 What distinguishes this study from the many public UFC-prediction projects is less the raw accuracy than the rigour around it. First, we audit for **lookahead leakage** and use only genuinely pre-fight information, so reported numbers are not inflated by information that would be unknown at prediction time. Second, we treat the well-known **red-corner advantage** as a controlled analysis rather than a feature, showing that it is largely a selection effect (the red corner is systematically the favourite) rather than a property of the colour itself. Third, instead of predicting only the winner, we predict the harder **joint outcome of winner and method** (six classes), which is both more interesting and more learnable from stylistic features. Finally, because our dataset ships per-method betting props, we can benchmark this richer target against the market by **log-loss**, not just accuracy.
 
 Our strongest model reaches about 63% winner-prediction accuracy, within the published ceiling and a short step behind the betting market, while the from-scratch boosting extension proves no better than a simple linear discriminant. We read this as the predictive signal in pre-fight data being close to exhausted: getting near the ceiling is the achievable goal, and the rest is the sport's irreducible randomness.
-<!-- VERIFIED 2026-06-26: Genauer founded FightMetric in 2007, became UFC's official stats provider in 2008, 67 categories (ref [4], Sloan bio). The ~65% [5] and ~79% [6] figures rest on their cited web sources - acceptable for a course report. -->
 
-### 1.1 Related work - ✅ drafted (pending citation cleanup)
+### 1.1 Related work
 
 UFC is a popular subject for data projects, and the public landscape is heavily skewed toward **winner prediction**: logistic regression, random forests and gradient-boosted trees (XGBoost / LightGBM) trained on the same ufcstats lineage, typically landing in the low-to-mid 60s percent [[6]](#ref-6). Method-of-victory is tackled less often but is not unheard of - a handful of comparative studies and applications predict *how* a fight ends as well as *who* wins. A different and, to us, especially interesting strand uses unsupervised learning to **cluster fighters by style**; the most directly comparable example is the 2024 factor-analysis-plus-K-means study [[3]](#ref-3), which groups fighters into stylistic archetypes and links them to outcomes.
 
 We genuinely enjoyed the style-clustering idea and considered it as our own project, but ultimately found *predicting outcomes* more exciting, and we wanted a way to keep the notion of "style" in play rather than discard it. Our compromise is the **joint winner-and-method target**: rather than clustering style directly, we let it surface through *how* fights are won (a grappler's submissions and decisions vs. a striker's knockouts) and through difference features between the two fighters. As a course project we make no claim to novelty against the academic literature - our contribution is a *combination* that is rare in the public pile: everything implemented from scratch, an explicit leakage audit with a chronological split, the red-corner advantage handled as controlled EDA rather than a feature, and a benchmark against the **per-method betting market**, which almost no public project attempts.
 
-<!-- "the public pile" is a general observation and needs no citation; ref [6] stands in as a concrete published example of the winner-prediction genre. If you want a specific GitHub/Kaggle project named, SOURCES.md lists some (rezan21, calicartels, Carson Martin) - add one with a real URL only if you actually looked at it. -->
-
-## 2. Problem description - ✅ drafted (sufficient)
+## 2. Problem description
 
 We formulate the task as a single **multiclass classification problem over six classes**: the joint outcome of *who wins* (Red or Blue corner) and *how the fight ends* (KO/TKO, submission, or decision) - i.e. `Red-KO`, `Red-SUB`, `Red-DEC`, `Blue-KO`, `Blue-SUB`, `Blue-DEC`. Each fight is described only by information available *before* it starts (pre-fight career aggregates, physical attributes, stance, weight class, and difference features between the two fighters), and the model must assign one of the six labels.
 
@@ -58,21 +34,17 @@ We formulate the task as a single **multiclass classification problem over six c
 
 **Excluded outcomes.** Fights ending in ways that fall outside the three method buckets - disqualifications, no-contests, overturned results, draws, and bouts with an unrecorded method - are rare and not meaningfully predictable from pre-fight features. We drop them rather than dilute the label space with a noisy catch-all class; the exact filtering and its effect on dataset size are described in Section 3.
 
-## 3. Dataset description - ⏳ stub for Milica to fill (scaffold below; facts in docs/DATASETS.md)
+## 3. Dataset description
 
-<!-- MILICA: write this as flowing prose (2-4 short paragraphs), not bullets. The bullets below
-are a checklist of what to cover, with the known facts filled in. Delete this comment and the
-"(write: ...)" prompts as you go. Source of truth = docs/DATASETS.md and src/data/load.py. -->
+The dataset is the **mdabbert Ultimate UFC Dataset** (`ufc-master.csv`, Kaggle), itself a derivative of ufcstats.com / FightMetric, which has been the UFC's official statistics provider since 2008. We chose this particular package because it is the only single-file source that combines pre-fight career aggregates, physical attributes, and per-method betting odds - everything needed for both modelling and the market benchmark, without any manual joining across sources.
 
-- **Source and provenance.** mdabbert *Ultimate UFC Dataset* (Kaggle, file `ufc-master.csv`), itself a derivative of ufcstats.com / FightMetric (already introduced in Section 1). (write: one sentence on why this one - it ships pre-fight aggregates + betting odds in a single file.)
-- **Coverage and size.** Fights from 2010 to 2026; **6,911 fights** remain after dropping weird outcomes (out of the raw ~7k). (write: confirm the raw row count from the CSV.)
-- **Unit of observation.** One row per fight, with the two fighters anonymized to the Red and Blue corners; each row carries pre-fight career aggregates and physical attributes for both corners plus difference (`_dif`) columns. (write: name the main column groups - physical: reach/height/age/stance/weight class; record: wins/losses/win-streak; per-fight rates: sig. strikes, takedowns, control time, KD, sub attempts.)
-- **Target construction.** The 6-class label is winner (Red/Blue) x method (KO/TKO, SUB, DEC), built in `src/data/load.py` from the `Winner` and `finish` columns via `METHOD_MAP`. (write: one line.)
-- **What we exclude and why.** Result/leakage columns are dropped so nothing from the fight itself leaks in: `Winner`, `finish`, `finish_round`, `finish_round_time`, **`total_fight_time_secs`** (this fight's duration - the sneaky one), `empty_arena` (see `LEAK_COLS`). Betting-odds columns are kept out of the features and used only for the Section 7 benchmark. (write: one line.)
-- **Weird outcomes dropped.** DQ, no-contest, overturned, draws, and rows with an unrecorded method fall outside the three method buckets; they are rare and not predictable from pre-fight features, so we drop them rather than add a noisy catch-all class. (write: the exact count dropped if easy to get.)
-- **Missingness.** Debutants have no prior UFC record, so their career aggregates are mostly empty (~75% missing) and are imputed train-only; this is also the leakage check in Section 4. (write: one line on how imputation is handled - cross-reference Section 6.)
+The dataset covers UFC fights from 2010 to 2026 at one row per bout. Fights with outcomes outside our three method buckets are dropped: disqualifications, no-contests, overturned results, draws, and rows with an unrecorded method. These are rare edge cases that carry no clean signal from pre-fight features. After filtering, **6,911 fights** remain across six joint outcome classes. The two fighters in each fight are anonymized as the Red and Blue corners; each row carries pre-fight career aggregates and physical attributes for both corners, together with pre-computed difference (`_dif`) columns representing the red-minus-blue gap on each statistic. The main feature groups are: physical attributes (height, reach, age, stance, weight class); record (wins, losses, win streak, loss streak); and per-fight career rates (significant strikes landed and absorbed, takedown attempts and accuracy, control time, knockdowns, and submission attempts).
 
-## 4. Exploratory data analysis - 🟡 drafted (C1/C2/C3 done; C2 confound is the highlight) - feeds: `notebooks/01_eda.ipynb`
+The six-class target is constructed in `src/data/load.py` by combining the `Winner` column (Red or Blue) with the `finish` column mapped to three method buckets: KO/TKO → KO, any decision variant (unanimous, split, or majority) → DEC, and submission → SUB. This yields labels such as `Red-DEC` or `Blue-KO`. All columns that carry information from the fight itself are excluded from the features to prevent lookahead leakage: the winner, the finish method, finish details, the round and time of finish, the total fight duration (this last one is easy to overlook but encodes whether the fight ended early), and the empty-arena indicator. The betting-odds columns (moneyline and per-method props) are retained in the dataset but withheld from the feature matrix; they are used only for the Section 7 market benchmark.
+
+Career-average statistics for a fighter's very first UFC bout are not available by design: there was no prior UFC fight to aggregate over. These debutant rows consequently show approximately 75% missing values in their career-average columns, whereas experienced fighters have complete aggregates with essentially zero missing values. We use this gap as the leakage sanity check described in Section 4. In the modelling pipeline the missing values are filled by median imputation, computed on the training set only and then applied to the test set (see Section 6).
+
+## 4. Exploratory data analysis
 
 The dataset has 6,911 fights after dropping weird outcomes, spread across the six joint classes.
 
@@ -100,7 +72,7 @@ The dataset has 6,911 fights after dropping weird outcomes, spread across the si
 
 ## 5. Methods
 
-### 5.1 Baseline methods (from scratch) - ✅ drafted - feeds: `src/baselines/`
+### 5.1 Baseline methods (from scratch)
 
 The brief allows one to three baseline methods with a justification of the choice; we use three: LDA, QDA, and kNN. Together they span the three classical decision-boundary families covered in the course, which gives a controlled, low-redundancy comparison rather than three methods that behave alike.
 
@@ -112,7 +84,7 @@ All three are natively multiclass, so no one-vs-rest workaround is needed on the
 
 Each baseline is implemented from scratch and validated against scikit-learn (see `tests/`); as with the extension, the library is used only to check correctness, and every reported number comes from our own implementation. This panel of generative-linear (LDA), generative-quadratic (QDA), and instance-based (kNN) methods sets up the project's core question against the boosting extension of Section 5.2: does the more complex ensemble beat the classical baselines, and is the gain worth the added complexity?
 
-### 5.2 Extension (from scratch) - ✅ drafted - feeds: `src/extension/`
+### 5.2 Extension (from scratch)
 
 Our extension is SAMME (Stagewise Additive Modeling using a Multi-class Exponential loss), the multiclass generalization of AdaBoost introduced by Zhu, Zou, Rosset and Hastie [[1]](#ref-1), building on the original binary AdaBoost of Freund and Schapire [[2]](#ref-2). We chose it because our target has six classes and classic AdaBoost is binary: SAMME extends boosting to K classes directly, without decomposing the problem into several one-vs-rest models, so the output stays a single vote over all six labels.
 
@@ -128,22 +100,17 @@ then multiply the weight of every misclassified sample by `exp(alpha)` and renor
 
 **Validation.** The implementation is from scratch in NumPy. We validate it against scikit-learn's `AdaBoostClassifier(algorithm='SAMME')` with depth-one trees on the Iris dataset, checking both the stump alone and the full ensemble, and we separately confirm that on a two-class problem our SAMME matches binary AdaBoost (the K = 2 case above). All checks pass and are part of the project's test suite. As the brief requires, scikit-learn is used only for this validation; every reported number comes from our own code.
 
-## 6. Experimental setup - ⬜ stub for Milica to fill (scaffold below; facts from `src/data/`)
+## 6. Experimental setup
 
-<!-- MILICA: write as prose. The numbers below are known and verified from the pipeline/notebooks -
-just confirm them against src/data/split.py, src/data/pipeline.py and the notebooks, then turn the
-bullets into 2-3 paragraphs. Delete this comment and the "(confirm/write: ...)" prompts as you go. -->
+**Feature matrix and corner symmetrization.** The feature matrix contains 114 columns: the pre-computed difference (`_dif`) columns from the dataset, the absolute per-corner `R_`/`B_` columns (physical attributes and career rates), two binary debut flags (`R_is_debut`, `B_is_debut`) that preserve the signal that a fighter has no prior UFC record, and one-hot encodings of stance (Red and Blue) and weight class. Betting-odds columns are excluded from the features and used only for the market benchmark. To eliminate the red-corner prior (Section 4), we apply **corner symmetrization** to the training set: each fight is independently assigned a random 50/50 coin flip; a flip consistently negates all `_dif` columns, swaps the paired `R_`/`B_` columns, and flips the label's winner side (e.g. `Red-KO` becomes `Blue-KO`). The test set keeps its original corners so that the always-red reference and the betting market are scored on the same fights as our models.
 
-- **Feature matrix.** ~112 features: difference (`_dif`) columns + absolute R_/B_ columns + one-hot stance and weight class; betting-odds columns excluded (benchmark-only). Built by `src/data/features.py::make_features`. (confirm: exact feature count.)
-- **Corner symmetrization.** Corners randomly swapped to a 50/50 base rate so models cannot exploit the red-corner prior (`features.py::symmetrize`). Applied to the **training set only**; the test set keeps its original corners so the always-red and market references are scored on the real corners. (write: one line.)
-- **Split.** Chronological 80/20 (train = earlier fights, test = later), **5,529 train / 1,382 test** fights - no random shuffle, to mimic real forecasting and avoid lookahead. (`src/data/split.py`.)
-- **Scaling and imputation.** Both fit on the training set only and applied to the test set: standardization (mean 0, std 1) of the numeric features, one-hots left untouched; missing career aggregates median-imputed train-only. (confirm against `pipeline.py`.)
-- **Seeds.** All reported metrics are the mean (and std) over **3 symmetrization seeds**. (confirm: seed count and what the seed controls.)
-- **Validation-against-sklearn protocol.** Every from-scratch method is checked against scikit-learn on a reference dataset (LDA/QDA/kNN on the project data; SAMME on Iris) via `tests/`; sklearn is used only to confirm correctness, and all reported numbers come from our own code. (write: one line.)
-- **Metrics.** 6-class accuracy, winner- and method-collapsed accuracy, macro/per-class F1, log-loss and Brier (for the probabilistic market comparison), and the 6-class confusion matrix. All in `src/metrics.py`. (write: one line.)
-- **Hyperparameter-sweep protocol.** SAMME number-of-stumps via `staged_score`; kNN k-sweep and PCA-dimension sweep (Section 7 / E2-E3). (confirm: the k grid and PCA dims swept.)
+**Split, scaling, and imputation.** We use a **chronological 80/20 split**: the earlier 80% of fights by date form the training set (5,529 fights) and the later 20% form the test set (1,382 fights). No random shuffling is applied, so the split mirrors a real forecasting scenario in which the model is always trained on the past and evaluated on the future. Standardization (mean 0, standard deviation 1) and median imputation for missing career aggregates are both fit on the training set only and then applied to the test set, preventing any test information from leaking into preprocessing.
 
-## 7. Results - 🟡 drafted (E2/E3 rows still to add) - feeds: `notebooks/02-04`
+**Seeds and evaluation protocol.** Because corner symmetrization involves a random coin flip, the training set varies across runs. All reported metrics are the mean (± standard deviation) over **three symmetrization seeds** (0, 1, 2). The test set is the same for all seeds (original corners, no randomness). Every from-scratch implementation is verified against scikit-learn on a held-out reference dataset before being used for evaluation: LDA, QDA, and kNN are checked on the project data itself, and SAMME is checked on the Iris dataset; the full validation suite (44/44 checks passing) lives in `tests/`. Scikit-learn is used solely for this correctness check; every number reported in Section 7 comes from our own code.
+
+**Metrics and hyperparameter sweeps.** We report 6-class accuracy, winner-collapsed accuracy (Red vs Blue), method-collapsed accuracy (KO/SUB/DEC), macro-F1 (unweighted average over the six per-class F1 scores, so all classes count equally), one-vs-rest macro ROC-AUC, and log-loss, all from `src/metrics.py`. For the probabilistic market comparison we also compute the Brier score. Hyperparameter sweeps cover: SAMME number of stumps (evaluated at every round from 1 to 200 via `staged_score`); kNN number of neighbours k (values 1, 3, 5, 7, 11, 15, 21, 31); and PCA dimension for the dimensionality-reduction ablation (values 2, 5, 10, 20, 30, 50).
+
+## 7. Results
 
 All numbers below are the mean over three symmetrization seeds, on the chronological original-corner test set (1,382 fights; the market benchmark uses the 1,099 with full per-method odds). Models are scored on the full six-class target and, for comparison against the reference baselines, collapsed to the winner (Red/Blue) and the method (KO/SUB/DEC).
 
@@ -170,7 +137,7 @@ Here **macro-F1** is the unweighted average of the six per-class F1 scores (each
 
 ![Winner accuracy across models against the reference baselines: SAMME and LDA tie at the top (~0.63), inside the published ceiling and well above always-red (0.562) and the coin flip (0.500).](figures/model_comparison.png)
 
-**The flexible and instance-based methods struggle in high dimensions.** QDA (0.567 winner) and kNN (0.550) trail the linear and boosted models, and their log-loss is poor (3.13 and 3.64 against ~1.6 for LDA/SAMME) - QDA stays overconfident even regularized, and kNN suffers the curse of dimensionality at 114 features. This is consistent with the EDA finding that the outcome is roughly linear in the difference features. Whether dimensionality reduction rescues them is the ablation in the next subsection.
+**The flexible and instance-based methods struggle in high dimensions.** QDA (0.567 winner) and kNN (0.550) trail the linear and boosted models, and their log-loss is poor (3.13 and 3.64 against ~1.6 for LDA/SAMME) - QDA stays overconfident even regularized, and kNN suffers the curse of dimensionality at 114 features. This is consistent with the EDA finding that the outcome is roughly linear in the difference features. Whether dimensionality reduction rescues them is the ablation below.
 
 **Convergence and overfitting.** SAMME's test accuracy peaks at around round 113 and drifts slightly down by round 200, so the ensemble mildly overfits past its sweet spot - a textbook boosting curve.
 
@@ -182,7 +149,7 @@ The confusion matrices tell the same story for the extension and the best baseli
 
 ![The same pattern for the best baseline, LDA (row-normalized), shown for comparison.](figures/confusion_matrix_baseline.png)
 
-**Against the market.** Scored by log-loss on the 1,099 fights with full odds coverage, SAMME reaches 1.663 versus the de-vigged market's 1.551 (Brier 0.793 versus 0.749). The market is better but the gap is small: a log-loss difference of about 0.11 means the market assigns on average roughly 1.12 times more probability to the actual outcome. We get close to, but do not beat, the practical ceiling.
+**Against the market.** Scored by log-loss on the 1,099 fights with full odds coverage, SAMME reaches 1.665 versus the de-vigged market's 1.551 (Brier 0.793 versus 0.749). The market is better but the gap is small: a log-loss difference of about 0.11 means the market assigns on average roughly 1.12 times more probability to the actual outcome. We get close to, but do not beat, the practical ceiling.
 
 ![Log-loss of our models versus the de-vigged betting market (lower is better): the market leads at 1.55, but SAMME (1.66) and LDA come close.](figures/logloss_comparison.png)
 
@@ -198,26 +165,29 @@ The kNN k-sweep completes the hyperparameter analysis: 6-class accuracy is noisy
 
 ![kNN k-sweep: 6-class accuracy versus the number of neighbours k. Accuracy is low and noisy for small k, then plateaus from about k=15 onward.](figures/hyperparam_knn_k.png)
 
-## 8. Analysis and discussion - ✅ drafted
+## 8. Analysis and discussion
 
 **Does the extension beat the baselines, and is the complexity worth it?** No. SAMME reaches 0.633 winner accuracy and LDA 0.626, a gap smaller than the seed-to-seed variation, so a 200-stump boosting ensemble and a single linear discriminant perform equally. The natural reading is that the relationship between the pre-fight difference features and the outcome is close to linear: there is little non-linear structure for boosting to exploit, so its extra capacity does not translate into accuracy. For this problem the simpler model is preferable on every axis except, marginally, probability calibration.
 
+The decision-region plots below illustrate why: re-fit on just two features each, all four models sit in a heavily mixed region where Red and Blue winners overlap almost completely. LDA draws a straight boundary, QDA a gentle curve, kNN ragged local pockets, and SAMME axis-aligned boxes from its stumps - but no family carves out clean separation, which is why winner accuracy stays near the ceiling regardless of model.
+
 ![Decision regions of each model, re-fit on the two most predictive features (illustrative 2D stand-in, not the full 114-D model). LDA draws a straight boundary, QDA a gentle curve, kNN ragged local pockets, and SAMME axis-aligned boxes (its decision stumps). The heavy Red/Blue overlap is why winner accuracy stays near the ceiling regardless of model family.](figures/decision_regions.png)
-![Decision regions for each model, on next two most predictive](figures/decision_regions_next2.png)
 
-**Does dimensionality reduction help?** Also no, and informatively so. The PCA scree curve is flat: it takes 50 of the 114 components to capture 90% of the variance, so there is no compact low-dimensional structure to recover. Reducing to a PCA subspace leaves QDA essentially unchanged (0.566 against 0.567 at full dimension) and improves kNN only marginally (0.562 against 0.550), and neither approaches LDA. So the weakness of QDA and kNN is not a conditioning problem that DR can fix; it is that their inductive biases (per-class covariance, local neighbourhoods) do not suit data whose signal is spread thinly and roughly linearly across many features. This answers a natural question, "would PCA or regularization rescue the flexible methods?", and the answer is no.
+![The same decision-region comparison on the next two most predictive features, confirming the same pattern: the four models carve space differently but all operate in an equally mixed region, showing that the heavy class overlap is not specific to any single feature pair.](figures/decision_regions_next2.png)
 
-**How close are we to the ceiling and the market?** Our winner accuracy of about 0.63 sits inside the published 63-67% range, and against the de-vigged betting market we reach a log-loss of 1.66 versus the market's 1.55. The market remains the stronger forecaster, but the gap is small (about 12% more probability mass on the true outcome, on average). We approach but do not beat the practical ceiling, which is the expected outcome: the market aggregates sharp money and information we do not have.
+**Does dimensionality reduction help?** Also no, and informatively so. The PCA scree curve is flat: it takes 50 of the 114 components to capture 90% of the variance, so there is no compact low-dimensional structure to recover. Reducing to a PCA subspace leaves QDA essentially unchanged (0.566 against 0.567 at full dimension) and improves kNN only marginally (0.562 against 0.550), and neither approaches LDA. The weakness of QDA and kNN is not a conditioning problem that DR can fix; it is that their inductive biases (per-class covariance, local neighbourhoods) do not suit data whose signal is spread thinly and roughly linearly across many features.
+
+**How close are we to the ceiling and the market?** Our winner accuracy of about 0.63 sits inside the published 63-67% range, and against the de-vigged betting market we reach a log-loss of 1.66 versus the market's 1.55. The market remains the stronger forecaster, but the gap is small. We approach but do not beat the practical ceiling, which is the expected outcome: the market aggregates sharp money and information we do not have.
 
 **What predicts how a fight ends?** Method of victory is harder than the winner: method accuracy hovers around 0.50, and the confusion matrix shows the models concentrate on the common decision outcomes, recovering knockouts and especially submissions less often. The class imbalance (decisions are by far the largest class) and the inherent unpredictability of finishes both contribute.
 
-**Where prediction works better.** The single accuracy figure hides real variation across divisions. Broken down by weight class, winner accuracy ranges from about 0.73 in welterweight to about 0.55 in flyweight, an eighteen-point spread. Crucially, this variation does not track weight in any clean way: the correlation between a division's weight and its accuracy is only about +0.31 across the nine divisions, weak and not significant given so few points. The heaviest division (heavyweight) sits mid-table, the lightest (flyweight) is lowest, and the middle divisions span the whole range (welterweight highest, middleweight low). If anything, that weak positive sign points the opposite way to the common knockout-luck intuition, it would make heavier divisions marginally more predictable rather than less, but the effect is too small and noisy to rest anything on. The per-division estimates are themselves noisy (several divisions have only about 50 to 100 test fights), so we report the spread as a real but largely unexplained effect and leave its causes and per-division modelling to future work.
+**Where prediction works better.** The single accuracy figure hides real variation across divisions. Broken down by weight class, winner accuracy ranges from about 0.73 in welterweight to about 0.55 in flyweight, an eighteen-point spread. Crucially, this variation does not track weight in any clean way: the correlation between a division's weight and its accuracy is only about +0.31 across the nine divisions, weak and not significant given so few points. The heaviest division (heavyweight) sits mid-table, the lightest (flyweight) is lowest, and the middle divisions span the whole range (welterweight highest, middleweight low). The per-division estimates are noisy (several divisions have only about 50 to 100 test fights), so we report the spread as a real but largely unexplained effect.
 
 ![Winner accuracy by weight class: it ranges from ~0.73 (welterweight) down to ~0.55 (flyweight), but does not track division weight in any clean way (correlation only +0.31 across nine divisions).](figures/accuracy_by_weightclass.png)
 
 **Errors and limitations.** The headline limitation is the low ceiling itself: a single clean strike can end a fight, so a large share of the outcome is irreducible variance no pre-fight model can capture. Others: the six-class target is imbalanced; symmetrization deliberately removes the corner prior, which costs a little on the original-corner test but buys methodological honesty; and the debut indicator we tried added nothing. None of these are fatal, and several of our choices (the confound control, the leakage audit, the market benchmark) are exactly the rigour that distinguishes the study.
 
-## 9. Conclusions - ✅ drafted
+## 9. Conclusions
 
 We set out to see how close a fully from-scratch pipeline could get to the practical ceiling on UFC outcome prediction. On a chronological test set, our best models reach about 63% winner-prediction accuracy and about 0.35 accuracy on the harder six-class winner-and-method target, beating the always-favourite and always-red references and landing inside the published 63-67% ceiling. The boosting extension (SAMME) matches but does not beat a simple linear discriminant, and the de-vigged betting market still edges both on log-loss (1.55 against our 1.66). Two findings stand out: the red-corner advantage is a selection effect rather than a real edge, and the signal in the pre-fight difference features is close to linear, so the added complexity of an ensemble buys little here. Beyond the headline, two further findings give the result more shape: recent form, grappling, and experience (win streaks, takedown rates, rounds fought) carry more signal than the often-cited reach and age, and predictability varies sharply by division (from about 0.73 in welterweight to about 0.55 in flyweight) without tracking weight in any clean way. The contribution of this project is therefore less a single best model than a careful map of how far pre-fight data can take outcome prediction on this problem, together with the methodology that makes the map trustworthy: a leakage audit, the controlled red-corner analysis, and a benchmark against the betting market. In short, we get near the ceiling, which is the realistic target in a sport with this much irreducible variance.
 
@@ -227,20 +197,37 @@ Other framings we discussed and set aside, each able to stand as its own project
 
 A further refinement we did not pursue is **cost-sensitive learning**. The six classes are not equally costly to confuse: mistaking `Red-KO` for `Red-DEC` still gets the winner right, whereas mistaking `Red-DEC` for `Blue-DEC` does not. A cost matrix that gives partial credit for a correct winner but wrong method, applied either at decision time via Bayes risk over the predicted probabilities or baked into the boosting objective (AdaCost-style), could trade a little method accuracy for better winner accuracy and is a natural next step given our joint target.
 
-## References - ✅ drafted
+## References
 
 The brief requires a reference only for the extension method; the baseline methods are covered in the course (see Section 5.1) and are not listed here. References 1 and 2 cover the extension; 3 to 7 are domain and related work.
 
-1. <a id="ref-1"></a>Zhu, J., Zou, H., Rosset, S. & Hastie, T. (2009). *Multi-class AdaBoost.* Statistics and Its Interface, 2(3), 349-360. Free PDF: https://hastie.su.domains/Papers/samme.pdf - DOI https://doi.org/10.4310/SII.2009.v2.n3.a8
+1. <a id="ref-1"></a>Zhu, J., Zou, H., Rosset, S. & Hastie, T. (2009). *Multi-class AdaBoost.* Statistics and Its Interface, 2(3), 349-360. https://doi.org/10.4310/SII.2009.v2.n3.a8
 2. <a id="ref-2"></a>Freund, Y. & Schapire, R. E. (1997). *A decision-theoretic generalization of on-line learning and an application to boosting.* Journal of Computer and System Sciences, 55(1), 119-139. https://doi.org/10.1006/jcss.1997.1504
 3. <a id="ref-3"></a>*Artificial Intelligence in UFC Outcome Prediction and Fighter Strategies Optimization* (2024). Proc. 9th Intl. Conf. on Intelligent Information Processing (ACM). https://dl.acm.org/doi/10.1145/3696952.3696966
 4. <a id="ref-4"></a>Rami Genauer, FightMetric founder, speaker bio, MIT Sloan Sports Analytics Conference. https://www.sloansportsconference.com/people/rami-genauer
 5. <a id="ref-5"></a>mmamodel.ai, methodology writeup on the ~65% winner-prediction ceiling and the betting market as benchmark. https://mmamodel.ai/methodology/
 6. <a id="ref-6"></a>*Prediction of UFC Lightweight Winners Using Ensemble Machine Learning* (2024). ResearchGate. https://www.researchgate.net/publication/403503222
-7. <a id="ref-7"></a>Kuhn, R. *Fightnomics*, book-length statistical analysis of MMA (the site fightnomics.com is now defunct). Archived: https://web.archive.org/web/20191017131432/http://fightnomics.com/
+7. <a id="ref-7"></a>Kuhn, R. *Fightnomics*, book-length statistical analysis of MMA. Archived: https://web.archive.org/web/20191017131432/http://fightnomics.com/
 
-<!-- Links checked 2026-06-26; ACM and ResearchGate return 403 to automated tools but open normally in a browser. If Section 4 EDA later quotes specific Fightnomics thresholds or the PLOS One 2013 southpaw study, add those as primary sources then. The dataset (mdabbert Ultimate UFC Dataset, Kaggle) is cited in Section 3 as data, not here. -->
+## Appendix
 
-## Appendix - ⬜ stub
+**Repository layout.**
 
-Repo layout, how to run, the sklearn-validation results (`tests/`).
+```
+src/baselines/      LDA, QDA, kNN, PCA, majority classifier (from scratch, validated vs sklearn)
+src/extension/      SAMME multiclass AdaBoost (from scratch, validated vs sklearn on Iris)
+src/data/           load+label, feature engineering, corner symmetrization, chronological split,
+                    train-only scaling/imputation, betting-odds benchmark
+src/metrics.py      evaluation metrics (accuracy, F1, ROC-AUC, log-loss, Brier, confusion matrix)
+src/plotting.py     figure helpers (save_fig, plot_confusion_matrix, plot_decision_regions, …)
+notebooks/          01_eda.ipynb  02_baselines.ipynb  03_extension.ipynb  04_results.ipynb
+tests/              unit/ (per-class unit tests) + validate_baselines.py (integration runner)
+data/raw/           mdabbert ufc-master.csv (gitignored; download from Kaggle)
+report/figures/     all figures embedded in this document
+report/             this report + per-notebook result CSVs (results_baselines.csv, etc.)
+docs/               PROPOSAL.md  TODO.md  DATASETS.md  SOURCES.md
+```
+
+**How to reproduce.** Install dependencies (`pip install -r requirements.txt`), place `ufc-master.csv` in `data/raw/mdabbert/`, then run the notebooks in order: `01_eda` → `02_baselines` → `03_extension` → `04_results`. The notebooks write result CSVs to `report/` and figures to `report/figures/`; `04_results` reads those CSVs rather than refitting models, so it runs in seconds.
+
+**Sklearn validation summary.** The integration runner (`tests/validate_baselines.py`) checks LDA, QDA, kNN, and SAMME predictions and probabilities against scikit-learn reference implementations on held-out data. All 44 checks pass. Individual unit tests live in `tests/unit/`.
