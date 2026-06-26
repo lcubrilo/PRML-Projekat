@@ -14,7 +14,7 @@ Team: Luka Cubrilo, Milica Cvetic.
 - The boosting extension (SAMME) ties the simple linear discriminant (LDA): the pre-fight signal is close to linear, so the added complexity does not pay off, and dimensionality reduction does not rescue the weaker methods either.
 - The betting market is still a slightly better forecaster (log-loss 1.55 versus our 1.66), but we come close.
 - The "red corner advantage" is a selection effect (the red corner is usually the favourite), not a real edge.
-- Recent form and grappling carry the most signal; reach and age carry little. Predictability varies by division (welterweight ~0.73 down to flyweight ~0.55).
+- Recent form, grappling, and experience carry the most signal; reach and age carry little. Predictability varies by division (welterweight ~0.73 down to flyweight ~0.55), but not in any clean relationship with weight.
 
 ## Repository layout
 ```
