@@ -26,11 +26,9 @@ def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool 
         diff_cols = [c for c in df.columns if c.endswith("_dif")]
         parts.append(df[diff_cols].copy())
         
-# TODO (feature engineering):
-# Try alternative encoding for stance features:
-# - current: separate one-hot encoding for Red and Blue stance
-# - experiment with Red/Blue pair encoding (NxN combinations)
-# - group rare stance categories if they hurt model performance (SAMME)
+# Optional future experiment (not required, current encoding is what we report):
+# alternative stance encodings - Red/Blue pair encoding (NxN combinations) instead
+# of separate one-hots, or grouping rare stance categories if they hurt SAMME.
 
     if use_absolutes:
         abs_cols = [

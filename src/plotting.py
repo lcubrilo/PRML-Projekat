@@ -13,6 +13,22 @@ import matplotlib.pyplot as plt
 
 FIG_DIR = Path(__file__).resolve().parents[1] / "report" / "figures"
 
+# UFC weight classes ascending by weight: men's divisions first, then women's,
+# oddities (Catch Weight) last. Use this everywhere a plot/print compares divisions.
+WEIGHT_CLASS_ORDER = [
+    "Flyweight", "Bantamweight", "Featherweight", "Lightweight", "Welterweight",
+    "Middleweight", "Light Heavyweight", "Heavyweight",
+    "Women's Strawweight", "Women's Flyweight", "Women's Bantamweight", "Women's Featherweight",
+    "Catch Weight",
+]
+
+
+def order_weight_classes(present):
+    """Sort the weight classes in `present` by WEIGHT_CLASS_ORDER; unknown labels appended."""
+    present = list(present)
+    known = [w for w in WEIGHT_CLASS_ORDER if w in present]
+    return known + [w for w in present if w not in WEIGHT_CLASS_ORDER]
+
 
 def save_fig(name: str, dpi: int = 150, tight: bool = True):
     """Save the current matplotlib figure as report/figures/<name>.png."""

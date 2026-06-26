@@ -184,7 +184,7 @@ General texts: Duda/Hart/Stork (*Pattern Classification*), Bishop (*PRML*), Hast
 - ✅ Datasets downloaded + inspected → [DATASETS.md](docs/DATASETS.md).
 - ✅ Baselines ported into `src/baselines/` + validated vs sklearn (`tests/`).
 - ✅ SAMME extension implemented from scratch + validated; eval metrics (`src/metrics.py`), naive baselines (`src/baselines/naive.py`), odds benchmark (`src/data/odds.py`), plotting helpers (`src/plotting.py`) added.
-- ✅ Data pipeline: B1 (load+label), B2 (features), B3 (symmetrize) done; B4 (chronological split + scaling) still pending.
+- ✅ Data pipeline: B1 (load+label), B2 (features), B3 (symmetrize), B4 (chronological split + train-only scaling) all done; composed in `src/data/pipeline.py::build_dataset`.
 - ✅ Citation resolved (ACM, not IEEE) + ~63-67% ceiling grounded → [SOURCES.md](docs/SOURCES.md).
 - ✅ Resolved: logistic regression NOT used as a baseline (LDA/QDA/kNN are enough).
 

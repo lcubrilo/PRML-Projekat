@@ -124,16 +124,16 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 
 ### E. Evaluation & analysis  (`notebooks/04_results`)  → depends on D
 - [x] **E1.** Metrics done (`src/metrics.py`) + applied across 02/03/04: mean+/-std over 3 seeds, winner/method collapses, confusion matrix, log-loss/Brier. (Luka)
-- [~] **E2.** SAMME convergence curve done (`03`, `staged_score`, peaks ~round 113). Remaining: kNN k-sweep + PCA-dims sweep. (Milica)
+- [~] **E2.** SAMME convergence curve done (`03`, `staged_score`, peaks ~round 113). Remaining: kNN k-sweep (PCA-dims sweep effectively covered by the E3 ablation). (Milica)
 - [x] **E3.** DR ablation done (`04`). Finding: PCA does NOT rescue QDA/kNN (variance spread, 50/114 comps for 90%); best PCA QDA 0.566 / kNN 0.562, neither beats LDA 0.626. (Luka)
 
 ### F. Out of scope (TA: nothing beyond the proposal; deadline tomorrow)
 - ~~F1 nationality scrape~~ · ~~F2 fight-metric regression~~ - cut. Don't start these.
 
 ### G. Deliverables  → depends on E
-- [~] **G1.** Report - **drafted: Sections 1 (+headline), 1.1, 2, 4 EDA, 5.1, 5.2, 7 Results, 9 (+findings), References.** Remaining: 3 dataset + 6 setup (Milica), 8 analysis (Luka, after E3). (both)
+- [~] **G1.** Report - **drafted: Sections 1 (+headline), 1.1, 2, 4 EDA, 5.1, 5.2, 7 Results, 8 Analysis, 9 (+findings), References. All 14 figures now embedded inline (incl. a SAMME confusion matrix).** Remaining: 3 dataset + 6 setup (Milica - stub scaffolds in place to fill); final pre-PDF cleanup (strip status tags + author comments). (both)
 - [ ] **G2.** Oral-defense slides. (both)
-- [ ] **G3.** README for end users. (Milica)
+- [x] **G3.** README for end users (`README.md`: overview, findings, layout, run, data). Done. (Milica)
 
 ## Backlog (later / nice-to-have, not blocking)
 - [ ] **SAMME speed.** ~2.8s/stump on the full data (5529x112) -> ~9.4 min for 200 estimators. Cause: the from-scratch stump scans every candidate threshold (~n_samples) for all 112 features each round. Fine for one fit + `staged_score`; if seed-averaging/experimentation gets painful, speed it up via a quantile threshold grid (~32-64 thresholds/feature) - keep Luka's comments where they still apply.

@@ -1,7 +1,7 @@
 """B1 + label: load mdabbert, drop result/leakage columns, drop weird outcomes,
 build the joint 6-class label (winner x method).
 
-STUB - fill the TODOs. Column facts already verified (see docs/DATASETS.md).
+Column facts verified in docs/DATASETS.md.
 """
 from pathlib import Path
 import pandas as pd
