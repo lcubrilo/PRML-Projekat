@@ -124,7 +124,7 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 
 ### E. Evaluation & analysis  (`notebooks/04_results`)  → depends on D
 - [x] **E1.** Metrics done (`src/metrics.py`) + applied across 02/03/04: mean+/-std over 3 seeds, winner/method collapses, confusion matrix, log-loss/Brier. (Luka)
-- [~] **E2.** SAMME convergence curve done (`03`, `staged_score`, peaks ~round 113). Remaining: kNN k-sweep (PCA-dims sweep effectively covered by the E3 ablation). (Milica)
+- [x] **E2.** Done. SAMME convergence curve (`03`, `staged_score`, train-vs-test, peaks ~round 113) **and** kNN k-sweep (`03`, vectorized; accuracy plateaus at k=15) -> `hyperparam_knn_k.png`. (PCA-dims sweep covered by the E3 ablation.) (Milica's sweep, folded in)
 - [x] **E3.** DR ablation done (`04`). Finding: PCA does NOT rescue QDA/kNN (variance spread, 50/114 comps for 90%); best PCA QDA 0.566 / kNN 0.562, neither beats LDA 0.626. (Luka)
 
 ### F. Out of scope (TA: nothing beyond the proposal; deadline tomorrow)

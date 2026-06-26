@@ -194,13 +194,16 @@ The confusion matrices tell the same story for the extension and the best baseli
 
 ![The data projected onto its first two principal components: the six classes overlap heavily, consistent with a thin, roughly linear signal.](figures/pca_2d.png)
 
-The kNN k-sweep is the remaining E2 item.
+The kNN k-sweep completes the hyperparameter analysis: 6-class accuracy is noisy at small k (high variance) and plateaus around k=15, the value used in the baseline panel, with no gain from more neighbours.
+
+![kNN k-sweep: 6-class accuracy versus the number of neighbours k. Accuracy is low and noisy for small k, then plateaus from about k=15 onward.](figures/hyperparam_knn_k.png)
 
 ## 8. Analysis and discussion - ✅ drafted
 
 **Does the extension beat the baselines, and is the complexity worth it?** No. SAMME reaches 0.633 winner accuracy and LDA 0.626, a gap smaller than the seed-to-seed variation, so a 200-stump boosting ensemble and a single linear discriminant perform equally. The natural reading is that the relationship between the pre-fight difference features and the outcome is close to linear: there is little non-linear structure for boosting to exploit, so its extra capacity does not translate into accuracy. For this problem the simpler model is preferable on every axis except, marginally, probability calibration.
 
 ![Decision regions of each model, re-fit on the two most predictive features (illustrative 2D stand-in, not the full 114-D model). LDA draws a straight boundary, QDA a gentle curve, kNN ragged local pockets, and SAMME axis-aligned boxes (its decision stumps). The heavy Red/Blue overlap is why winner accuracy stays near the ceiling regardless of model family.](figures/decision_regions.png)
+![Decision regions for each model, on next two most predictive](figures/decision_regions_next2.png)
 
 **Does dimensionality reduction help?** Also no, and informatively so. The PCA scree curve is flat: it takes 50 of the 114 components to capture 90% of the variance, so there is no compact low-dimensional structure to recover. Reducing to a PCA subspace leaves QDA essentially unchanged (0.566 against 0.567 at full dimension) and improves kNN only marginally (0.562 against 0.550), and neither approaches LDA. So the weakness of QDA and kNN is not a conditioning problem that DR can fix; it is that their inductive biases (per-class covariance, local neighbourhoods) do not suit data whose signal is spread thinly and roughly linearly across many features. This answers a natural question, "would PCA or regularization rescue the flexible methods?", and the answer is no.
 
