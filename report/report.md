@@ -35,7 +35,7 @@ Fundamentally, this means fight outcomes cannot be predicted much better than a 
 
 What distinguishes this study from the many public UFC-prediction projects is less the raw accuracy than the rigour around it. First, we audit for **lookahead leakage** and use only genuinely pre-fight information, so reported numbers are not inflated by information that would be unknown at prediction time. Second, we treat the well-known **red-corner advantage** as a controlled analysis rather than a feature, showing that it is largely a selection effect (the red corner is systematically the favourite) rather than a property of the colour itself. Third, instead of predicting only the winner, we predict the harder **joint outcome of winner and method** (six classes), which is both more interesting and more learnable from stylistic features. Finally, because our dataset ships per-method betting props, we can benchmark this richer target against the market by **log-loss**, not just accuracy.
 
-<!-- Headline result sentence to be added once Section 7 results are in, e.g. "Our SAMME model reaches ~XX% accuracy / YY log-loss, within Z of the market." -->
+Our strongest model reaches about 63% winner-prediction accuracy, within the published ceiling and a short step behind the betting market, while the from-scratch boosting extension proves no better than a simple linear discriminant. We read this as the predictive signal in pre-fight data being close to exhausted: getting near the ceiling is the achievable goal, and the rest is the sport's irreducible randomness.
 <!-- VERIFIED 2026-06-26: Genauer founded FightMetric in 2007, became UFC's official stats provider in 2008, 67 categories (ref [4], Sloan bio). The ~65% [5] and ~79% [6] figures rest on their cited web sources - acceptable for a course report. -->
 
 ### 1.1 Related work - ✅ drafted (pending citation cleanup)
@@ -108,18 +108,46 @@ then multiply the weight of every misclassified sample by `exp(alpha)` and renor
 
 Feature build (difference and/or absolute features; corner symmetrization), chronological 80/20 split, scaling fit on train only, validation-against-sklearn protocol, metrics, number of seeds, hyperparameter-sweep protocol.
 
-## 7. Results - ⏳ stub (blocked on modelling/eval) - feeds: `notebooks/02-04`
+## 7. Results - 🟡 drafted (E2/E3 rows still to add) - feeds: `notebooks/02-04`
 
-Baseline panel vs SAMME (mean ± std over seeds); confusion matrices; hyperparameter analysis (plots); odds benchmark (log-loss vs the market); optional PCA/LDA dimensionality-reduction ablation.  
-Figures: `figures/model_comparison.png`, `figures/confusion_matrix_samme.png`, `figures/hyperparam_k_knn.png`, `figures/hyperparam_samme.png`, `figures/pca_2d.png`.
+All numbers below are the mean over three symmetrization seeds, on the chronological original-corner test set (1,382 fights; the market benchmark uses the 1,099 with full per-method odds). Models are scored on the full six-class target and, for comparison against the reference baselines, collapsed to the winner (Red/Blue) and the method (KO/SUB/DEC).
 
-## 8. Analysis and discussion - ⏳ stub (blocked on results)
+| Model | 6-class acc | winner acc | method acc | log-loss |
+|---|---|---|---|---|
+| **SAMME (extension)** | **0.349** | **0.633** | 0.515 | 1.663 |
+| LDA | 0.343 | 0.626 | 0.516 | 1.592 |
+| QDA (reg) | 0.230 | 0.567 | 0.371 | 3.134 |
+| kNN (k=15) | 0.282 | 0.550 | 0.497 | 3.642 |
+| majority class | 0.266 | 0.521 | 0.514 | 1.702 |
+| always-red (reference) | - | 0.562 | - | - |
+| coin flip (reference) | - | 0.500 | - | - |
+| betting market (reference) | - | - | - | 1.551 |
 
-Does the extension beat the baselines, and is the gain worth the complexity? Does dimensionality reduction help? Feature importance / what predicts *how* a fight ends. How close did we get to the market and the ceiling. Honest discussion of errors and limitations (TA: errors are fine if explained).
+**The extension ties the best baseline.** SAMME reaches 0.633 winner accuracy and LDA 0.626; the gap is smaller than the seed-to-seed standard deviation (about 0.01-0.02), so the 200-stump ensemble and the single linear discriminant are, for practical purposes, equal. Both land squarely in the published ~63-67% winner-prediction ceiling and clearly beat the always-red baseline (0.562) and a coin flip. (Figure: `figures/model_comparison.png`.)
 
-## 9. Conclusions - 🟡 future-work drafted; findings need results
+**The flexible and instance-based methods struggle in high dimensions.** QDA (0.567 winner) and kNN (0.550) trail the linear and boosted models, and their log-loss is poor (3.13 and 3.64 against ~1.6 for LDA/SAMME) - QDA stays overconfident even regularized, and kNN suffers the curse of dimensionality at 114 features. This is consistent with the EDA finding that the outcome is roughly linear in the difference features. Whether dimensionality reduction rescues them is the ablation in the next subsection.
 
-What we found (headline numbers, how close to the ceiling/market). <!-- needs Section 7 results -->
+**Convergence and overfitting.** SAMME's test accuracy peaks at around round 113 and drifts slightly down by round 200, so the ensemble mildly overfits past its sweet spot - a textbook boosting curve. (Figure: `figures/hyperparam_samme.png`.) The confusion matrix shows the models lean toward the common decision classes, so KO and especially submission outcomes are recovered less often. (Figure: `figures/confusion_matrix_baseline.png`.)
+
+**Against the market.** Scored by log-loss on the 1,099 fights with full odds coverage, SAMME reaches 1.663 versus the de-vigged market's 1.551 (Brier 0.793 versus 0.749). The market is better but the gap is small: a log-loss difference of about 0.11 means the market assigns on average roughly 1.12 times more probability to the actual outcome. We get close to, but do not beat, the practical ceiling.
+
+**Dimensionality reduction.** PCA does not rescue the weaker models. The variance is spread out (50 of the 114 components are needed for 90%, so there is no compact low-dimensional structure), and at their best PCA dimension QDA reaches 0.566 and kNN 0.562 winner accuracy, neither beating LDA's 0.626. (Figures: `figures/pca_scree.png`, `figures/pca_sweep.png`, `figures/pca_2d.png`.) The kNN k-sweep is the remaining E2 item.
+
+## 8. Analysis and discussion - ✅ drafted
+
+**Does the extension beat the baselines, and is the complexity worth it?** No. SAMME reaches 0.633 winner accuracy and LDA 0.626, a gap smaller than the seed-to-seed variation, so a 200-stump boosting ensemble and a single linear discriminant perform equally. The natural reading is that the relationship between the pre-fight difference features and the outcome is close to linear: there is little non-linear structure for boosting to exploit, so its extra capacity does not translate into accuracy. For this problem the simpler model is preferable on every axis except, marginally, probability calibration.
+
+**Does dimensionality reduction help?** Also no, and informatively so. The PCA scree curve is flat: it takes 50 of the 114 components to capture 90% of the variance, so there is no compact low-dimensional structure to recover. Reducing to a PCA subspace leaves QDA essentially unchanged (0.566 against 0.567 at full dimension) and improves kNN only marginally (0.562 against 0.550), and neither approaches LDA. So the weakness of QDA and kNN is not a conditioning problem that DR can fix; it is that their inductive biases (per-class covariance, local neighbourhoods) do not suit data whose signal is spread thinly and roughly linearly across many features. This answers a natural question, "would PCA or regularization rescue the flexible methods?", and the answer is no.
+
+**How close are we to the ceiling and the market?** Our winner accuracy of about 0.63 sits inside the published 63-67% range, and against the de-vigged betting market we reach a log-loss of 1.66 versus the market's 1.55. The market remains the stronger forecaster, but the gap is small (about 12% more probability mass on the true outcome, on average). We approach but do not beat the practical ceiling, which is the expected outcome: the market aggregates sharp money and information we do not have.
+
+**What predicts how a fight ends?** Method of victory is harder than the winner: method accuracy hovers around 0.50, and the confusion matrix shows the models concentrate on the common decision outcomes, recovering knockouts and especially submissions less often. The class imbalance (decisions are by far the largest class) and the inherent unpredictability of finishes both contribute.
+
+**Errors and limitations.** The headline limitation is the low ceiling itself: a single clean strike can end a fight, so a large share of the outcome is irreducible variance no pre-fight model can capture. Others: the six-class target is imbalanced; symmetrization deliberately removes the corner prior, which costs a little on the original-corner test but buys methodological honesty; and the debut indicator we tried added nothing. None of these are fatal, and several of our choices (the confound control, the leakage audit, the market benchmark) are exactly the rigour that distinguishes the study.
+
+## 9. Conclusions - ✅ drafted
+
+We set out to see how close a fully from-scratch pipeline could get to the practical ceiling on UFC outcome prediction. On a chronological test set, our best models reach about 63% winner-prediction accuracy and about 0.35 accuracy on the harder six-class winner-and-method target, beating the always-favourite and always-red references and landing inside the published 63-67% ceiling. The boosting extension (SAMME) matches but does not beat a simple linear discriminant, and the de-vigged betting market still edges both on log-loss (1.55 against our 1.66). Two findings stand out: the red-corner advantage is a selection effect rather than a real edge, and the signal in the pre-fight difference features is close to linear, so the added complexity of an ensemble buys little here. In short, we get near the ceiling, which is the realistic target in a sport with this much irreducible variance.
 
 **Future work.** The clearest direction is to enrich the feature set with information our dataset simply does not carry. ufcstats and its derivatives describe *what* fighters did in the cage but say almost nothing about *who* they are - in particular **nationality, gym/team and martial-arts base** are absent. These map onto some of the sport's most discussed narratives (the Dagestani wrestling pipeline, the Brazilian jiu-jitsu lineage, and so on), and testing whether such background actually carries predictive signal would be a genuinely interesting study. Doing it properly would mean **building a new dataset**: scraping bios from sources like Tapology or Sherdog and joining them onto the ufcstats fight records, effectively stitching multiple sources into one - which is why we scoped it out of this project rather than attempting it under a deadline.
 

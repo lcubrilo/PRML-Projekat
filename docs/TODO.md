@@ -116,22 +116,22 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 - [x] **C3.** Correlation heatmap of key diff features (reach~height and ko~win at 0.63; otherwise low). Leakage sanity check passed: experienced fighters 0% missing priors vs debutants ~75% missing -> aggregates are pre-fight. Done.
 
 ### D. Modelling  (`notebooks/02-03`)
-- [x] **D1.** Baseline panel on the split (`02_baselines.ipynb`). LDA best: 6-class 0.355, winner-collapse **0.630** (> always-red 0.562). QDA(reg=1.0)/kNN weaker (high-dim). (Luka)
-- [x] **D2.** SAMME from scratch + tests. Run on the real split in `03_extension.ipynb` (~9 min fit).
-- [x] **D3.** Naive baselines (`02_baselines.ipynb`): majority 0.255, always-red (winner, orig corners) 0.562, coin-flip 0.500. (Luka)
-- [~] **D4.** Odds benchmark (`03_extension.ipynb`): SAMME proba vs de-vigged market, log-loss/Brier. Running with the SAMME fit. (Luka)
-- Pipeline composed in `src/data/pipeline.py::build_dataset` (leakage-safe, incl. train-only imputation fix). QDA/LDA/kNN now expose `predict_proba`.
+- [x] **D1.** Baseline panel, seed-averaged (`02_baselines.ipynb`). LDA best: 6-class 0.343, winner-collapse **0.626** (> always-red 0.562). QDA(reg)/kNN weaker (high-dim). (Luka)
+- [x] **D2.** SAMME from scratch + tests. Run seed-averaged in `03_extension.ipynb`: 6-class 0.349, winner **0.633** (ties LDA).
+- [x] **D3.** Naive baselines (`02_baselines.ipynb`): majority 0.266, always-red (winner, orig corners) 0.562, coin-flip 0.500. (Luka)
+- [x] **D4.** Odds benchmark (`03_extension.ipynb`): SAMME log-loss 1.665 vs de-vigged market 1.551 (Brier 0.793 vs 0.749), 1099 covered fights. (Luka)
+- Pipeline composed in `src/data/pipeline.py::build_dataset` (leakage-safe, train-only impute + scale, symmetrize-train-only). QDA/LDA/kNN expose `predict_proba`.
 
 ### E. Evaluation & analysis  (`notebooks/04_results`)  → depends on D
-- [ ] **E1.** Metrics - **functions done** (`src/metrics.py`: accuracy, F1, ROC-AUC, log-loss, Brier, confusion matrix, seed summary); apply to the baseline + SAMME outputs. Needs D1/D2 runs. (Luka)
-- [ ] **E2.** Hyperparameter sweeps + plots - plotting helpers + `staged_score` ready; needs models on data. (Milica)
-- [ ] **E3.** Dim-reduction ablation (PCA / LDA-projection) + 2D plot coloured by method. (Milica)
+- [x] **E1.** Metrics done (`src/metrics.py`) + applied across 02/03/04: mean+/-std over 3 seeds, winner/method collapses, confusion matrix, log-loss/Brier. (Luka)
+- [~] **E2.** SAMME convergence curve done (`03`, `staged_score`, peaks ~round 113). Remaining: kNN k-sweep + PCA-dims sweep. (Milica)
+- [x] **E3.** DR ablation done (`04`). Finding: PCA does NOT rescue QDA/kNN (variance spread, 50/114 comps for 90%); best PCA QDA 0.566 / kNN 0.562, neither beats LDA 0.626. (Luka)
 
 ### F. Out of scope (TA: nothing beyond the proposal; deadline tomorrow)
 - ~~F1 nationality scrape~~ · ~~F2 fight-metric regression~~ - cut. Don't start these.
 
 ### G. Deliverables  → depends on E
-- [ ] **G1.** Report - **drafted: Sections 1, 1.1, 2, 5.1, 5.2, 9-future-work, References.** Remaining: 3 dataset, 4 EDA, 6 setup, 7 results, 8 analysis, 9 findings. (both)
+- [~] **G1.** Report - **drafted: Sections 1 (+headline), 1.1, 2, 4 EDA, 5.1, 5.2, 7 Results, 9 (+findings), References.** Remaining: 3 dataset + 6 setup (Milica), 8 analysis (Luka, after E3). (both)
 - [ ] **G2.** Oral-defense slides. (both)
 - [ ] **G3.** README for end users. (Milica)
 

@@ -198,9 +198,9 @@ Current layout:
 ```
 src/baselines/      from-scratch course methods ✅ (validated vs sklearn) + naive baselines ✅
 src/extension/      SAMME multiclass AdaBoost ✅ (validated vs sklearn)
-src/data/           load+label ✅, features+symmetrize ✅, odds benchmark ✅; split (TODO B4)
+src/data/           load+label ✅, features+symmetrize ✅, split+scale ✅, odds benchmark ✅, pipeline.build_dataset ✅
 src/metrics.py      from-scratch eval metrics ✅      src/plotting.py  figure helpers ✅
-notebooks/          01_eda  02_baselines  03_extension  04_results (stubs)
+notebooks/          01_eda ✅  02_baselines ✅  03_extension ✅  04_results (results + E3 ablation)
 tests/              unit/ + validate_baselines.py (integration runner, 44/44)
 data/raw, data/processed   (gitignored)
 report/  slides/    write-up + presentation
