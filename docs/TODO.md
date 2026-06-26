@@ -108,7 +108,7 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 - [x] **B1.** Loader + 6-class label (`load.py`): drops result/leak cols and weird outcomes. Done.
 - [x] **B2.** Feature matrix (`features.py::make_features`): `*_dif` + absolute R_/B_ cols, one-hot stance/weight_class, debut NaNs filled. Market cols (`MARKET_COLS` + any `odds`) now excluded (benchmark-only). 112 features.
 - [x] **B3.** Symmetrize corners (`features.py::symmetrize`): negate diffs, swap R_/B_, flip label side. Done.
-- [ ] **B4.** Chronological split + scale-fit-on-train-only (`split.py`, still a stub). **The one piece that unblocks all modelling.**
+- [x] **B4.** Chronological split + scale-fit-on-train-only (`split.py`). Done (Milica; fixed a duplicate-def bug that broke import). Verified end-to-end: 5529/1382 chronological, train scaled to mean 0/std 1, one-hots left untouched. **Unblocks all modelling.** (Still pending: move make_features median imputation to train-only - separate from B4.)
 
 ### C. EDA  (`notebooks/01_eda.ipynb`) - Luka
 - [x] **C1.** Class balance (6-class + winner + method), method-by-weight-class, feature distributions. Figures saved. Done.
@@ -116,10 +116,11 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 - [x] **C3.** Correlation heatmap of key diff features (reach~height and ko~win at 0.63; otherwise low). Leakage sanity check passed: experienced fighters 0% missing priors vs debutants ~75% missing -> aggregates are pre-fight. Done.
 
 ### D. Modelling  (`notebooks/02-03`)
-- [ ] **D1.** Run baseline panel (LDA, QDA, kNN) on the features. Needs **B4**. (Luka)
-- [x] **D2.** SAMME from scratch + tests. Done. (Running on the real split happens with D1 in the notebook.)
-- [ ] **D3.** Naive baselines - **classes done** (`src/baselines/naive.py`), just need running on the split. Needs **B4**. (Luka)
-- [ ] **D4.** Odds benchmark - **de-vig + `market_benchmark` done** (`src/data/odds.py`), only the model-vs-market comparison remains. Needs **D1**. (Luka)
+- [x] **D1.** Baseline panel on the split (`02_baselines.ipynb`). LDA best: 6-class 0.355, winner-collapse **0.630** (> always-red 0.562). QDA(reg=1.0)/kNN weaker (high-dim). (Luka)
+- [x] **D2.** SAMME from scratch + tests. Run on the real split in `03_extension.ipynb` (~9 min fit).
+- [x] **D3.** Naive baselines (`02_baselines.ipynb`): majority 0.255, always-red (winner, orig corners) 0.562, coin-flip 0.500. (Luka)
+- [~] **D4.** Odds benchmark (`03_extension.ipynb`): SAMME proba vs de-vigged market, log-loss/Brier. Running with the SAMME fit. (Luka)
+- Pipeline composed in `src/data/pipeline.py::build_dataset` (leakage-safe, incl. train-only imputation fix). QDA/LDA/kNN now expose `predict_proba`.
 
 ### E. Evaluation & analysis  (`notebooks/04_results`)  → depends on D
 - [ ] **E1.** Metrics - **functions done** (`src/metrics.py`: accuracy, F1, ROC-AUC, log-loss, Brier, confusion matrix, seed summary); apply to the baseline + SAMME outputs. Needs D1/D2 runs. (Luka)
@@ -133,3 +134,8 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 - [ ] **G1.** Report - **drafted: Sections 1, 1.1, 2, 5.1, 5.2, 9-future-work, References.** Remaining: 3 dataset, 4 EDA, 6 setup, 7 results, 8 analysis, 9 findings. (both)
 - [ ] **G2.** Oral-defense slides. (both)
 - [ ] **G3.** README for end users. (Milica)
+
+## Backlog (later / nice-to-have, not blocking)
+- [ ] **SAMME speed.** ~2.8s/stump on the full data (5529x112) -> ~9.4 min for 200 estimators. Cause: the from-scratch stump scans every candidate threshold (~n_samples) for all 112 features each round. Fine for one fit + `staged_score`; if seed-averaging/experimentation gets painful, speed it up via a quantile threshold grid (~32-64 thresholds/feature) - keep Luka's comments where they still apply.
+- [ ] **Cost-sensitive option.** Decision-time Bayes-risk with a winner/method cost matrix (partial credit for right-winner-wrong-method) - works for all models via predict_proba; report standard + cost-sensitive separately. Stretch: bake the cost into SAMME's training (AdaCost-style) and see if it helps.
+- [ ] **Regularization/PCA finding.** Unregularized QDA fails in 112-dim (worse than majority, log-loss 11); reg helps log-loss but QDA still < LDA -> motivates PCA (E3). Good report finding: necessity of regularization/DR in this regime.

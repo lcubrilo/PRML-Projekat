@@ -57,5 +57,16 @@ class KNNClassifier:
         enc = knn_predict(self._X, self._y, X, k=self.k, distance_fn=self.distance_fn)
         return self.classes_[enc]
 
+    def predict_proba(self, X):
+        """Class probabilities = fraction of the k nearest neighbours in each class."""
+        X = np.asarray(X, dtype=float)
+        K = len(self.classes_)
+        out = np.zeros((len(X), K))
+        for i, x in enumerate(X):
+            d = np.array([self.distance_fn(xt, x) for xt in self._X])
+            nn = np.argsort(d)[:self.k]
+            out[i] = np.bincount(self._y[nn], minlength=K) / self.k
+        return out
+
     def score(self, X, y):
         return float(np.mean(self.predict(X) == np.asarray(y)))

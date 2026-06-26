@@ -12,7 +12,8 @@ import pandas as pd
 MARKET_COLS = ["R_odds", "B_odds", "R_ev", "B_ev"]
 
 
-def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool = True) -> pd.DataFrame:
+def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool = True,
+                  impute: bool = True) -> pd.DataFrame:
     """Select pre-fight features. The dataset already ships BOTH:
       - difference cols: name ends in '_dif'  (reach_dif, age_dif, ko_dif, sig_str_dif, ...)
       - absolute cols:  R_*/B_*               (R_Reach_cms, B_age, R_avg_SIG_STR_landed, ...)"""
@@ -40,6 +41,16 @@ def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool 
         ]
         parts.append(df[abs_cols].copy())
 
+    # Debut flags: a fighter with no prior UFC record (wins + losses == 0). Median-imputing
+    # a debutant's missing career stats erases the 'no track record' signal, so we keep it
+    # explicitly. Named R_/B_ so symmetrize swaps them; 0/1 so the scaler leaves them alone.
+    if {"R_wins", "R_losses", "B_wins", "B_losses"}.issubset(df.columns):
+        debut = pd.DataFrame({
+            "R_is_debut": ((df["R_wins"] + df["R_losses"]) == 0).astype(int),
+            "B_is_debut": ((df["B_wins"] + df["B_losses"]) == 0).astype(int),
+        }, index=df.index)
+        parts.append(debut)
+
     cat_cols = [c for c in ["R_Stance", "B_Stance", "weight_class"] if c in df.columns]
 
     if cat_cols:
@@ -54,11 +65,13 @@ def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool 
         if X[col].dtype == "object":
             X[col] = pd.to_numeric(X[col], errors="coerce")
 
-    # Missing numerical values, mostly debut statistics, are filled with median.
-    numeric_cols = X.select_dtypes(include="number").columns
-    X[numeric_cols] = X[numeric_cols].fillna(X[numeric_cols].median())
-
-    X = X.fillna(0)
+    if impute:
+        # Missing numerical values, mostly debut statistics, filled with the median.
+        # For the leakage-safe pipeline pass impute=False and impute train-only AFTER
+        # the split instead (see src/data/pipeline.py::build_dataset).
+        numeric_cols = X.select_dtypes(include="number").columns
+        X[numeric_cols] = X[numeric_cols].fillna(X[numeric_cols].median())
+        X = X.fillna(0)
 
     return X
 

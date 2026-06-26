@@ -1,18 +1,14 @@
 """B4: chronological split + train-only scaling.
 
-STUB - fill the TODOs.
+chronological_split keeps the most recent fights as the test set (train on the
+past, test on the future). scale_train_only standardizes using train statistics
+only, leaving one-hot/binary columns untouched.
 """
 import pandas as pd
 
 
 def chronological_split(X: pd.DataFrame, y: pd.Series, dates: pd.Series, test_frac: float = 0.2):
     """Most-recent `test_frac` fights = test set (train on the past, test on the future)."""
-    def chronological_split(
-    X: pd.DataFrame,
-    y: pd.Series,
-    dates: pd.Series,
-    test_frac: float = 0.2
-):
     dates = pd.to_datetime(dates)
 
     order = dates.loc[X.index].sort_values().index

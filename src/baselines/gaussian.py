@@ -66,6 +66,13 @@ class GaussianClassifier:
         ])
         return scores
 
+    def predict_proba(self, X):
+        """Posterior probabilities: softmax over the (unnormalized) joint log-scores."""
+        log = self.predict_log_proba(X)
+        log = log - log.max(axis=1, keepdims=True)   # numerical stability
+        p = np.exp(log)
+        return p / p.sum(axis=1, keepdims=True)
+
     def predict(self, X):
         return self.classes_[np.argmax(self.predict_log_proba(X), axis=1)]
 
