@@ -66,7 +66,7 @@ class DecisionStump:
                 left_w = np.bincount(y[left_mask], weights=sample_weight[left_mask], minlength=K)
                 right_w = np.bincount(y[~left_mask], weights=sample_weight[~left_mask], minlength=K)
 
-                left_class, right_class = int(np.argmax(left_w)), int(np.argmax(right_w)) # find left's and right's most prominent class 
+                left_class, right_class = int(np.argmax(left_w)), int(np.argmax(right_w)) # find left's and right's most prominent class
 
                 pred = np.where(left_mask, left_class, right_class) # just two predictions, (2 most prominents)
                 error = sample_weight[pred != y].sum() # count up how many misses we had, but weighted
@@ -76,7 +76,7 @@ class DecisionStump:
                     best_error = error
                     self.feature_index, self.threshold = feature, float(threshold)
                     self.left_class, self.right_class = left_class, right_class
-        
+
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -210,3 +210,29 @@ class SAMMEClassifier:
     def score(self, X: np.ndarray, y: np.ndarray) -> float:
         """Mean accuracy of predict(X) against y."""
         return (self.predict(X) == y).mean()
+
+    def staged_predict(self, X: np.ndarray):
+        """Yield the ensemble's prediction after each successive boosting round.
+
+        Accumulates the vote scores incrementally (one stump at a time) so you
+        get the prediction for an ensemble of size 1, 2, ... T without refitting.
+        Used to plot accuracy vs n_estimators for the E2 hyperparameter analysis.
+
+        Yields
+        ------
+        np.ndarray, shape (n_samples,) - the prediction after t stumps, t=1..T.
+        """
+        n_samples = X.shape[0]
+        scores = np.zeros((n_samples, self.K_))
+        for stump, alpha in zip(self.stumps_, self.alphas_):
+            scores[np.arange(n_samples), stump.predict(X)] += alpha
+            yield self.classes_[np.argmax(scores, axis=1)]
+
+    def staged_score(self, X: np.ndarray, y: np.ndarray) -> list[float]:
+        """Accuracy after each boosting round - the convergence curve for E2.
+
+        Returns
+        -------
+        list[float], length len(self.stumps_) - accuracy of the size-t ensemble.
+        """
+        return [float((pred == y).mean()) for pred in self.staged_predict(X)]

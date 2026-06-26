@@ -8,7 +8,7 @@ Owners + priorities are in the Assignments table below. Background/why for most 
 ## Decisions - LOCKED (TA approved 2026-06-25)
 - [x] **Target:** one **joint 6-class** model (winner × method). (TA: cascade has complications the course didn't cover.)
 - [x] **Extension:** **SAMME** (TA preference).
-- [x] **Baselines:** **LDA, QDA, kNN** (TA: 1-3, with justification → `report/baselines_chosen.md`).
+- [x] **Baselines:** **LDA, QDA, kNN** (TA: 1-3, with justification → folded into report Section 5.1).
 - [x] **Weird outcomes:** **dropped** (rare, not meaningfully predictable; explained in the report).
 - [x] **Split:** chronological ~80/20. **Logistic regression:** not used (enough baselines).
 - ⚠️ **Deadline = tomorrow; no late commits accepted.** Out of scope (TA: nothing beyond the proposal): nationality scrape, fight-metric regression.
@@ -92,7 +92,10 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 
 ## Already done (so nobody redoes it)
 - [x] Datasets downloaded + inspected; leakage audited → [DATASETS.md](DATASETS.md). Primary = `mdabbert/ufc-master.csv`.
-- [x] All course baseline methods implemented from scratch in `src/baselines/` + validated vs sklearn → `tests/` (15/15).
+- [x] All course baseline methods implemented from scratch in `src/baselines/` + validated vs sklearn → `tests/`.
+- [x] **SAMME extension implemented from scratch** (`src/extension/samme.py`: DecisionStump + SAMMEClassifier + staged_predict/score) + validated vs sklearn (`tests/unit/test_samme.py`, integration in `validate_baselines.py`). **29/29 checks pass.**
+- [x] **Odds-benchmark helper** (`src/data/odds.py`: American→implied, de-vig, moneyline + per-method 6-class market) + tests (`tests/unit/test_odds.py`). The de-vig infra half of D4.
+- [x] **Report §1 Intro, §1.1 Related work, §2 Problem, §9 Future work, References** drafted (`report/report.md`).
 - [x] Repo skeleton, notebook stubs, `requirements.txt`, literature grounding ([SOURCES.md](SOURCES.md)).
 
 ---
@@ -116,9 +119,9 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 
 ### D. Modelling  (`notebooks/02–03`)  → depends on B
 - [ ] **D1.** Run the from-scratch **baseline panel** (LDA, QDA, kNN) on the features. → depends on **B4**.
-- [ ] **D2.** Implement the **extension from scratch** in `src/extension/` (SAMME) + a unit test in `tests/unit/`. → depends on **B4** (to run on data; implementable anytime).
+- [x] **D2.** ~~Implement the **extension from scratch** in `src/extension/` (SAMME) + a unit test in `tests/unit/`.~~ **DONE** (impl + unit + integration, 29/29). Remaining: call it on the real split in `notebooks/03_extension.ipynb` → still needs **B4**.
 - [ ] **D3.** **Naive baselines:** always-red and majority-class (always "decision").
-- [ ] **D4.** **Odds benchmark:** de-vig the market odds → implied probabilities; compare our model by **log-loss / Brier** (moneyline for winner, per-method props for method). → depends on **D1**.
+- [ ] **D4.** **Odds benchmark:** de-vig the market odds → implied probabilities; compare our model by **log-loss / Brier** (moneyline for winner, per-method props for method). → depends on **D1**. *(de-vig helper `src/data/odds.py` + tests DONE; only the model-vs-market comparison remains, which needs D1.)*
 
 ### E. Evaluation & analysis  (`notebooks/04_results`)  → depends on D
 - [ ] **E1.** Metrics: accuracy, per-class **F1**, ROC-AUC, **log-loss**, confusion matrix; **mean ± std over seeds**.

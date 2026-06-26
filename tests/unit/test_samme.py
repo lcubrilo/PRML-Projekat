@@ -101,6 +101,15 @@ def test_score_matches_predict():
     assert np.isclose(clf.score(Xte, yte), _acc(clf.predict(Xte), yte))
 
 
+def test_staged_score_ends_at_full_ensemble():
+    """staged_score's last entry must equal the full-ensemble score (E2 curve)."""
+    Xtr, Xte, ytr, yte = _iris()
+    clf = SAMMEClassifier(n_estimators=30).fit(Xtr, ytr)
+    staged = clf.staged_score(Xte, yte)
+    assert len(staged) == len(clf.stumps_)
+    assert np.isclose(staged[-1], clf.score(Xte, yte))
+
+
 if __name__ == '__main__':
     g = dict(globals())
     fns = [(n, f) for n, f in g.items() if n.startswith('test_') and callable(f)]
