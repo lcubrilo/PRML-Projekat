@@ -1,8 +1,8 @@
 # Proposal - Decision Tracker
 
-The TA proposal needs six points locked (see [CLAUDE.md §1](../CLAUDE.md)). This file tracks **what's decided vs. open**. Reasoning/menus live in [CLAUDE.md](../CLAUDE.md).
+> **DECISIONS LOCKED (TA approved 2026-06-25); proposal sent.** Live task status now lives in [TODO.md](TODO.md). This file is kept as the record of how the six points were settled. Reasoning/menus live in [CLAUDE.md](../CLAUDE.md).
 
-> Status: ✅ decided · 🟡 leaning · ⬜ open. **The team's submission to the TA may be a narrowed set, not a single pick** - e.g. "we lean X, would Y or Z be better?" is a valid proposal.
+Status legend: ✅ decided · 🟡 leaning · ⬜ open.
 
 ## Decision order & dependencies (decide top-down)
 
@@ -21,17 +21,19 @@ The TA's six points aren't in decision order. The actual dependency chain:
 | # | Point | Status | Current |
 |---|---|---|---|
 | a | Dataset(s) | ✅ | **`mdabbert/ufc-master.csv`** (verified: target + pre-fight features + odds; committed/pinned in repo). |
-| b | Problem formulation | 🟡 | **Method of victory + winner** - joint (6-class) **or** cascade (open). |
-| c | Baselines | ✅ | Bayes, LDA, QDA, kNN (+ linear floor) - implemented & validated (`src/baselines/`). |
-| d | Extension | 🟡 | **SAMME-AdaBoost** leaning (RF not ruled out). |
-| e | Reference | 🟡 | SAMME: Zhu, Zou, Rosset & Hastie (2009); base AdaBoost: Freund & Schapire (1997). |
-| f | Plan | 🟡 | `src/data` pipeline → baselines → extension → eval + odds benchmark ([CLAUDE.md §7](../CLAUDE.md)). |
+| b | Problem formulation | ✅ | **Joint winner x method (6-class).** TA: cascade has complications the course did not cover, so joint over cascade. |
+| c | Baselines | ✅ | LDA, QDA, kNN - implemented & validated (`src/baselines/`). |
+| d | Extension | ✅ | **SAMME** (multiclass AdaBoost) - implemented from scratch + validated. |
+| e | Reference | ✅ | SAMME: Zhu, Zou, Rosset & Hastie (2009); base AdaBoost: Freund & Schapire (1997). |
+| f | Plan | ✅ | `src/data` pipeline → baselines → extension → eval + odds benchmark ([CLAUDE.md Section 7](../CLAUDE.md)). |
 
 **Standing decision - odds usage: ✅ benchmark only** (not a feature, not unused). See the tension note in Direction 3.
 
-## Leaning direction
+## How we got here (historical reasoning; the decision below is now locked)
 
-### Direction 3 - Method of victory (multiclass) 🟡 *current lean*
+**Locked outcome:** Direction 3 (method of victory) extended to the **joint winner x method 6-class** target, extension **SAMME**, weird outcomes **dropped**. The discussion below is kept as the record.
+
+### Direction 3 - Method of victory (multiclass) *(chosen)*
 - **Problem:** predict KO/TKO vs submission vs decision from pre-fight features.
 - **Baselines:** Bayes, LDA, QDA, kNN.
 - **Why:** more learnable from style features than winner; meaningful confusion matrix; rarely done publicly → distinctive.
@@ -44,12 +46,12 @@ The TA's six points aren't in decision order. The actual dependency chain:
 - **Direction 1 - Winner + odds benchmark** ("predictability ceiling"): binary, simplest, cleanest moneyline benchmark; most saturated topic.
 - **Direction 2 - Fighter-style clustering → GMM-EM / DBSCAN:** leakage-free, distinctive, but softer conclusions and no odds angle.
 
-(Full formulation menu in [CLAUDE.md §5](../CLAUDE.md).)
+(Full formulation menu in [CLAUDE.md Section 5](../CLAUDE.md).)
 
-## Open questions blocking the proposal
-1. **Target shape** for method-of-victory: finish-type vs winner×method vs cascade.
-2. **Extension:** RF vs SAMME-AdaBoost vs GMM-EM.
-3. Optional: include **nationality** as an EDA/feature enrichment (needs scraping; gate behind core working)?
+## Open questions - all resolved
+1. **Target shape:** resolved → joint winner x method (6-class).
+2. **Extension:** resolved → SAMME.
+3. **Nationality enrichment:** resolved → out of scope (cut; see TODO.md section F).
 
 ## Decision log
 - **2026-06-25:** Leaning **method-of-victory** (b); **odds = benchmark**. Dataset → mdabbert. _(Luka)_

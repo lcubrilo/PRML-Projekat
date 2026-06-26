@@ -3,7 +3,7 @@
 Convert the sportsbook odds shipped in `mdabbert/ufc-master.csv` into de-vigged
 probabilities so our from-scratch model can be scored against the market by
 log-loss / Brier. The market is a *rival forecaster* here - odds are NEVER used
-as model features (that would just relearn the market; see CLAUDE.md §6).
+as model features (that would just relearn the market; see CLAUDE.md Section 6).
 
 Two markets are available:
   * moneyline (`R_odds` / `B_odds`)          -> P(Red win), P(Blue win)

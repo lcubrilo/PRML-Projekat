@@ -4,9 +4,9 @@ Light verification pass - confirming the load-bearing claims have real sources. 
 
 ## Predictability ceiling (~65%)
 - Multiple UFC winner-prediction models **cluster around ~65%** accuracy (Kappa < 0.6). This is the central tendency, **not a hard wall**:
-  - careful ensembles reach **~67–68%** (e.g. 67.6% acc, 0.727 AUC, 0.598 log-loss on held-out data);
+  - careful ensembles reach **~67-68%** (e.g. 67.6% acc, 0.727 AUC, 0.598 log-loss on held-out data);
   - one soft-voting ensemble (XGBoost+LightGBM+LogReg, Bayesian tuning, **SMOTE**, time-based split) claims **79.25%** acc / 88.67% AUC - ⚠️ treat with leakage/over-optimism scrutiny given the SMOTE + the gap to the pack.
-- **Honest framing for the report:** typical ~63–67%; sophisticated work high-60s; >75% claims warrant a leakage audit. The "~65% ceiling" narrative is defensible as *typical*, not absolute.
+- **Honest framing for the report:** typical ~63-67%; sophisticated work high-60s; >75% claims warrant a leakage audit. The "~65% ceiling" narrative is defensible as *typical*, not absolute.
 
 ## The factor-analysis + clustering paper - citation CORRECTED
 - It's **ACM 2024**, *"Artificial Intelligence in UFC Outcome Prediction and Fighter Strategies Optimization"*, Proc. 9th Intl. Conf. on Intelligent Information Processing - `https://dl.acm.org/doi/10.1145/3696952.3696966`. Prior notes mislabeled this "IEEE." ⇒ the "IEEE ensemble vs IEEE style-clustering" discrepancy was a **single mislabeled ACM paper**.

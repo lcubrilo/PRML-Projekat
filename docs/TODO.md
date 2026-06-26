@@ -15,7 +15,7 @@ Owners + priorities are in the Assignments table below. Background/why for most 
 
 ## Task sequence (dependency graph)
 
-Issues are [#1–#18](https://github.com/lcubrilo/PRML-Projekat/issues). Arrows = "must finish before". GitHub renders the diagram below.
+Issues are [#1-#18](https://github.com/lcubrilo/PRML-Projekat/issues). Arrows = "must finish before". GitHub renders the diagram below.
 
 Node colour = priority: red P0 critical, yellow P1 important, green P2 nice-to-have (matches the GitHub labels). Green check = done.
 
@@ -53,7 +53,7 @@ EDA (C1-C3), D3 (naive), and D4 (odds) hang off earlier nodes and can run in par
 
 ### Execution segments (who waits on whom)
 
-The pipeline **B1→B2→B4 is Milica's and B2 gates almost all of Luka's work**. The only big task with no data dependency is **D2 (SAMME)** — Luka builds it against iris/synthetic data while Milica clears the pipeline. Late on, **E1/E2 need both D1 and D2 (both Luka's)**, so the wait flips: Milica waits on Luka there.
+The pipeline **B1→B2→B4 is Milica's and B2 gates almost all of Luka's work**. The only big task with no data dependency is **D2 (SAMME)** - Luka builds it against iris/synthetic data while Milica clears the pipeline. Late on, **E1/E2 need both D1 and D2 (both Luka's)**, so the wait flips: Milica waits on Luka there.
 
 | Segment | Milica | Luka | 🔁 Sync gate |
 |---|---|---|---|
@@ -106,14 +106,14 @@ P0 critical · P1 important · P2 nice-to-have. Early tasks are firm; later ones
 
 ### B. Data → features  (`src/data/`) - Milica
 - [x] **B1.** Loader + 6-class label (`load.py`): drops result/leak cols and weird outcomes. Done.
-- [x] **B2.** Feature matrix (`features.py::make_features`): `*_dif` + absolute R_/B_ cols, one-hot stance/weight_class, debut NaNs filled. Done. **Fix pending:** exclude market cols (`R_odds, B_odds, R_ev, B_ev`) - they currently leak into the features.
+- [x] **B2.** Feature matrix (`features.py::make_features`): `*_dif` + absolute R_/B_ cols, one-hot stance/weight_class, debut NaNs filled. Market cols (`MARKET_COLS` + any `odds`) now excluded (benchmark-only). 112 features.
 - [x] **B3.** Symmetrize corners (`features.py::symmetrize`): negate diffs, swap R_/B_, flip label side. Done.
 - [ ] **B4.** Chronological split + scale-fit-on-train-only (`split.py`, still a stub). **The one piece that unblocks all modelling.**
 
-### C. EDA  (`notebooks/01_eda.ipynb`) - Luka - unblocked now (B2 is done)
-- [ ] **C1.** Distributions, class balance (method + winner), weight-class / stance breakdowns.
-- [ ] **C2.** **Red-corner confound analysis** (the differentiator): raw red win-rate → condition on odds/favorite → show colour itself adds little.
-- [ ] **C3.** Correlations / feature look; sanity-check leakage (debut rows have empty priors).
+### C. EDA  (`notebooks/01_eda.ipynb`) - Luka
+- [x] **C1.** Class balance (6-class + winner + method), method-by-weight-class, feature distributions. Figures saved. Done.
+- [x] **C2.** **Red-corner confound analysis** (the differentiator): raw red 57.7% → conditioned on the favourite it is ~70% (red fav) vs ~40% (blue fav); favourite wins 65.5% regardless of corner. Done.
+- [x] **C3.** Correlation heatmap of key diff features (reach~height and ko~win at 0.63; otherwise low). Leakage sanity check passed: experienced fighters 0% missing priors vs debutants ~75% missing -> aggregates are pre-fight. Done.
 
 ### D. Modelling  (`notebooks/02-03`)
 - [ ] **D1.** Run baseline panel (LDA, QDA, kNN) on the features. Needs **B4**. (Luka)

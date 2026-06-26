@@ -7,6 +7,15 @@
 
 Both follow the same sklearn-style fit/predict/predict_proba/score API as the rest
 of src/baselines so they drop straight into the evaluation code.
+
+IMPORTANT - the "always-red" baseline must be measured on the ORIGINAL corners,
+i.e. BEFORE B3 symmetrization. Symmetrization randomizes red/blue to a 50/50 base
+rate on purpose, so "always pick red" scores ~50% there and the ~58-64% red-corner
+edge (the thing this baseline is meant to capture) disappears. So evaluate it on the
+un-symmetrized data, and as a WINNER-level reference: collapse both the prediction
+("Red") and the 6-class truth to the winner side (Red/Blue) and score that. The
+real model is still trained/evaluated on the symmetrized data; only this naive
+reference uses the original corners.
 """
 import numpy as np
 

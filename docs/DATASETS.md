@@ -15,7 +15,7 @@ Local copies live in `data/raw/` (gitignored, **except** the committed `mdabbert
 | **komaksym** `raw_fighter_details.csv` | ✅ GitHub | bios | career aggregates (current, not as-of-fight) | ❌ | - | ✅ | fighter bio join (Height/Reach/Stance/DOB) |
 | **komaksym** scorecards / merged | ✅ GitHub | - | - | ❌ | ✅ + judge scores | ✅ | **only source with judges' scorecards** (JudgeAI route) |
 | **rajeevw/ufcdata** (Warrier) | ✅ Kaggle | `data.csv` 6012×144 | ✅ **pre-fight aggregates** (`*_avg_*`); leakage check passed | ❌ | target via `raw_total_fight_data.csv` `win_by` (join) | ✅ + `weight_class` | **leakage-safe features** (no odds) |
-| **mdabbert/ultimate-ufc** | ✅ Kaggle | 7177×118, 2010–2026 | ✅ pre-fight aggregates (`*_avg_*`) | ✅ **moneyline 97% + per-method (KO/sub/dec) ~82%** | ✅ `finish`, `finish_round` | ✅ | **the one-file winner. method target + features + odds** |
+| **mdabbert/ultimate-ufc** | ✅ Kaggle | 7177×118, 2010-2026 | ✅ pre-fight aggregates (`*_avg_*`) | ✅ **moneyline 97% + per-method (KO/sub/dec) ~82%** | ✅ `finish`, `finish_round` | ✅ | **the one-file winner. method target + features + odds** |
 
 ## Key facts (decision-relevant)
 
@@ -50,24 +50,24 @@ Local copies live in `data/raw/` (gitignored, **except** the committed `mdabbert
 ⇒ "leakage-safe pipeline" for mdabbert is mostly **column selection** (drop the results above) + the usual preprocessing-leakage hygiene (scale/encode fit on train only). The historical-aggregate leakage is already handled by the dataset.
 
 ## Implications for the project decision (VERIFIED)
-- **`mdabbert/ufc-master.csv` is the strongest single file:** it carries the `finish` target (KO/TKO 2223 · SUB 1260 · U/S/M-DEC 3432), pre-fight aggregate features (`*_avg_*`), **and** odds - both moneyline (`R_odds`/`B_odds`, 97%) and **per-method props** (`r_ko_odds`/`r_sub_odds`/`r_dec_odds` + blue, ~82% coverage). 2010–2026, 7177 fights.
+- **`mdabbert/ufc-master.csv` is the strongest single file:** it carries the `finish` target (KO/TKO 2223 · SUB 1260 · U/S/M-DEC 3432), pre-fight aggregate features (`*_avg_*`), **and** odds - both moneyline (`R_odds`/`B_odds`, 97%) and **per-method props** (`r_ko_odds`/`r_sub_odds`/`r_dec_odds` + blue, ~82% coverage). 2010-2026, 7177 fights.
 - **Per-method odds ⇒ method-of-victory can be benchmarked vs the market** (not just a majority-class baseline): mdabbert ships per-method props, so a (winner×method) or finish-type prediction can be compared to a *market* forecaster - the key advantage over odds-free sources.
 - **rajeevw** is the clean leakage-safe alternative if you don't need odds: `data.csv` (6012×144) has pre-fight aggregates + `Winner` + `weight_class`; the current-fight method (`win_by`) is in `raw_total_fight_data.csv` (same 6012 rows) → join for a method target. Leakage check passed: 1427/6012 rows have NaN priors (debutants) ⇒ aggregates are genuinely pre-fight. (`data.csv`'s `R_win_by_*` are pre-fight career *counts* = safe features, not the label.)
 - **JudgeAI/scorecard** route is uniquely enabled by komaksym (`SCORECARDS.csv`, merged file).
 
 ## Audit of the four remaining lineage mirrors (2026-06-25) - all REDUNDANT ✅
 
-Downloaded + inspected the four sources that were previously only name-dropped in CLAUDE.md §4. Verdict: **none add a single field useful to this project over what's already downloaded.** Confirmed (not just assumed) redundant.
+Downloaded + inspected the four sources that were previously only name-dropped in CLAUDE.md Section 4. Verdict: **none add a single field useful to this project over what's already downloaded.** Confirmed (not just assumed) redundant.
 
 | Source | Files | Rows | Odds? | Nationality? | Fight stats | Fighter-level table | Range |
 |---|---|---|---|---|---|---|---|
-| `cadelueker` | `fights`, `enhanced_fights`, `fighters` | 8115 fights / 2584 fighters | ❌ | ❌ | **in-fight** totals (strikes/td) | name/height/reach/stance/dob only (no career rates) | 1994 – 2025-04 |
-| `neelagiriaditya` | `UFC.csv` (124c) + 3 normalized tables | 8337 / 2611 | ❌ | ❌ | **in-fight** (full strike breakdown, r_/b_) | ✅ career rates (splm, str_acc, td_avg, sub_avg…) | 1994 – 2025-09 |
+| `cadelueker` | `fights`, `enhanced_fights`, `fighters` | 8115 fights / 2584 fighters | ❌ | ❌ | **in-fight** totals (strikes/td) | name/height/reach/stance/dob only (no career rates) | 1994 - 2025-04 |
+| `neelagiriaditya` | `UFC.csv` (124c) + 3 normalized tables | 8337 / 2611 | ❌ | ❌ | **in-fight** (full strike breakdown, r_/b_) | ✅ career rates (splm, str_acc, td_avg, sub_avg…) | 1994 - 2025-09 |
 | `rajaisrarkiani` | `Fights Data` (long), `Players Profiles` | 22110 fighter-rows / 3907 | ❌ | ❌ | **in-fight** (kd/str/td/sub only) | ✅ career rates (slpm, str_acc, td_avg…) | n/a parsed |
 | `fatismajli` | `ufc_event_data`, `ufc_fighters` (+ scraper .py) | 7060 / 3951 | ❌ | ❌ | **in-fight**, minimal (KD/Strikes/TD/Sub) | W/L/D + physicals (no career rates) | n/a parsed |
 
 **Why redundant (decisive points):**
-- **No odds anywhere** → mdabbert remains the only odds source. The old "odds: varies" note in CLAUDE.md §4 was wrong; corrected.
+- **No odds anywhere** → mdabbert remains the only odds source. The old "odds: varies" note in CLAUDE.md Section 4 was wrong; corrected.
 - **No nationality** → the nationality gap is unfilled; Tapology/Sherdog scraping still required.
 - **All fight-stats are in-fight** (like komaksym `stats_raw`) - none ship leakage-safe pre-fight rolling aggregates. mdabbert/rajeevw still the only leakage-safe feature sources.
 - **The fighter-level career-rate table they offer already exists locally:** `rajeevw/raw_fighter_details.csv` AND `komaksym/raw_fighter_details.csv` already carry `SLpM, Str_Acc, SApM, Str_Def, TD_Avg, TD_Acc, TD_Def, Sub_Avg` + Height/Weight/Reach/Stance/DOB - the exact style-fingerprint table needed for the clustering direction. So even that angle is covered.

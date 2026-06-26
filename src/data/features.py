@@ -1,9 +1,15 @@
 """B2 + B3: build the feature matrix and symmetrize corners.
 
-STUB - fill the TODOs.
+make_features selects the pre-fight feature columns; symmetrize randomizes the
+red/blue corners so the base rate is 50/50. Betting-market columns are excluded
+from the features (they are benchmark-only - see MARKET_COLS).
 """
 import numpy as np
 import pandas as pd
+
+# Betting-market columns (moneyline odds + expected value). These stay for the odds
+# BENCHMARK only and must never be features, or the model just relearns the market.
+MARKET_COLS = ["R_odds", "B_odds", "R_ev", "B_ev"]
 
 
 def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool = True) -> pd.DataFrame:
@@ -29,7 +35,8 @@ def make_features(df: pd.DataFrame, use_diffs: bool = True, use_absolutes: bool 
         abs_cols = [
             c for c in df.columns
             if (c.startswith("R_") or c.startswith("B_"))
-            and c not in ["R_fighter", "B_fighter", "R_Stance", "B_Stance"]
+            and c not in ["R_fighter", "B_fighter", "R_Stance", "B_Stance", *MARKET_COLS]
+            and "odds" not in c.lower()  # drop any market/odds column (benchmark-only)
         ]
         parts.append(df[abs_cols].copy())
 

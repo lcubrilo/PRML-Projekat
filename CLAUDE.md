@@ -54,7 +54,7 @@ Short proposal to the TA with six points: (a) dataset(s), (b) problem formulatio
 
 The from-scratch coursework lives in `Project context/course_materials/`. The directory names alone enumerate every covered topic (each has a solved `.ipynb`):
 
-`02_linear_regression` (+ gradient descent) · `03_least_squares` (perceptron / Ho–Kashyap) · `04_bayes_decision` (Bayes classifier) · `05_quadratic_classifiers` (QDA) · `06_mle` · `07_kde` · `08_knn` · `09_pca` · `10_lda` · `11_clustering` (k-means). (`01_intro` = linear algebra + probability refreshers.)
+`02_linear_regression` (+ gradient descent) · `03_least_squares` (perceptron / Ho-Kashyap) · `04_bayes_decision` (Bayes classifier) · `05_quadratic_classifiers` (QDA) · `06_mle` · `07_kde` · `08_knn` · `09_pca` · `10_lda` · `11_clustering` (k-means). (`01_intro` = linear algebra + probability refreshers.)
 
 **Reuse note:** the base techniques are now **ported into `src/baselines/`** (importable) and validated against sklearn (`tests/`). Reused code must still be **re-validated on the actual project dataset** - don't assume correctness carries over.
 
@@ -65,15 +65,15 @@ The from-scratch coursework lives in `Project context/course_materials/`. The di
 ## 3. Chosen domain: UFC / MMA fight analysis
 
 ### The "predictability ceiling" framing (the project's strongest narrative)
-**Verified (see [SOURCES.md](docs/SOURCES.md)):** published UFC winner-prediction **clusters around ~63–67% accuracy** - a single clean strike ends a fight, so the sport is high-variance. It's a *typical ceiling, not an absolute wall* (careful ensembles reach high-60s; one SMOTE+time-split model claims ~79% - treat as leakage-suspect). For a course graded on *rigor, not on beating the world*, this is an asset: frame as *how close can we get to the typical ceiling*, against reference points:
+**Verified (see [SOURCES.md](docs/SOURCES.md)):** published UFC winner-prediction **clusters around ~63-67% accuracy** - a single clean strike ends a fight, so the sport is high-variance. It's a *typical ceiling, not an absolute wall* (careful ensembles reach high-60s; one SMOTE+time-split model claims ~79% - treat as leakage-suspect). For a course graded on *rigor, not on beating the world*, this is an asset: frame as *how close can we get to the typical ceiling*, against reference points:
 - coin flip → 50%
-- always-pick-red → ~58–64% (inflated by a confound, below; komaksym shows 64% red)
+- always-pick-red → ~58-64% (inflated by a confound, below; komaksym shows 64% red)
 - betting market → ~65% (the practical ceiling on extractable signal, for *winner* prediction)
 
 A final ~64% then reads as a *finding* ("we've about hit the limit; the rest is irreducible randomness"), and a low number can't cost points.
 
 ### Two methodology traps (what a grader checks)
-1. **Lookahead leakage.** Career-aggregate stats are only safe if computed *up to but excluding* the bout being predicted. Weak public projects quietly train on in-fight stats and report 85–95% - that's leakage. Verify pre-fight integrity: a debut row should have null/zero priors; aggregates should accumulate fight-to-fight; a fighter entering 5–0 must not already show 6 wins.
+1. **Lookahead leakage.** Career-aggregate stats are only safe if computed *up to but excluding* the bout being predicted. Weak public projects quietly train on in-fight stats and report 85-95% - that's leakage. Verify pre-fight integrity: a debut row should have null/zero priors; aggregates should accumulate fight-to-fight; a fighter entering 5-0 must not already show 6 wins.
 2. **Red-corner confound.** Red wins ~58% raw, but "red" is systematically the favorite/champion - a selection effect, not a color effect (advantage has waned toward 50% over time **⚠️ VERIFY**). Demonstrating this as a *controlled* EDA analysis (raw rate → condition on favorite/champion → show color itself does little) is sophisticated and rare. Modeling fix: **symmetrize** corners (randomize A/B to force a 50/50 base rate) and use **difference features** (stat_A − stat_B).
 
 These two are the project's differentiators - most public UFC projects (hundreds, nearly all sklearn/XGBoost winner-prediction) ignore them.
@@ -85,7 +85,7 @@ All **⚠️ VERIFY** (sourced from research chat, mix of academic and journalis
 - **Southpaw paradox** - left-handers overrepresented in interactive combat sports and fight more often, but win-rate difference vs orthodox is *not* statistically significant (PLOS One 2013: 64.0% vs 62.6%).
 - **Weight-cutting** - genuinely contested across studies; latest reconciliation: regain % doesn't predict *who* wins but may shape *how* (more regain → more KO/TKO; less → more decisions).
 - **Reach** - disputed: Fightnomics says it matters; several ML/EDA projects found weak/no correlation with outcomes or strikes landed.
-- **Betting-market efficiency** - repeatedly the strongest single predictor; ML struggles to beat it (the reason it's used as a benchmark, §6).
+- **Betting-market efficiency** - repeatedly the strongest single predictor; ML struggles to beat it (the reason it's used as a benchmark, Section 6).
 - **Wrestling/grappling base & the Dagestan pipeline** - reaffirmed statistically (control time, takedown accuracy) and journalistically (mostly qualitative - *not* formal DS).
 - **JudgeAI** (LiteralFightNerd) - predicts judges' round scores from scorecards; red won 57.6% of rounds, 10-8 rounds only 3.3%.
 - **Elo / Meta UFC Rankings** - Elo argued unsuitable (fighters compete too infrequently to stabilize); UFC's official **Meta UFC Rankings** (Elo-based, ~June 2026) replaced media voting.
@@ -99,8 +99,8 @@ Effectively **one canonical raw source** - `ufcstats.com` (successor to FightMet
 
 | Source | What / when | Odds? | Use |
 |---|---|---|---|
-| **`mdabbert/ultimate-ufc-dataset`** (Kaggle) | Superset: Warrier stats + odds (moneyline **+ per-method props**) + rankings; 2010–2026, 118 cols, `finish` target. | **Yes** | ✅ **CHOSEN PRIMARY** - one file does it all. |
-| **`rajeevw/ufcdata`** (Kaggle) | Canonical base, ~1994–2021. `data.csv` ships pre-fight aggregates + `Winner`; method (`win_by`) in `raw_total_fight_data.csv`. Leakage-safe by design. | No | Fallback (no odds); larger history. |
+| **`mdabbert/ultimate-ufc-dataset`** (Kaggle) | Superset: Warrier stats + odds (moneyline **+ per-method props**) + rankings; 2010-2026, 118 cols, `finish` target. | **Yes** | ✅ **CHOSEN PRIMARY** - one file does it all. |
+| **`rajeevw/ufcdata`** (Kaggle) | Canonical base, ~1994-2021. `data.csv` ships pre-fight aggregates + `Winner`; method (`win_by`) in `raw_total_fight_data.csv`. Leakage-safe by design. | No | Fallback (no odds); larger history. |
 | **`WarrierRajeev/UFC-Predictions`** (GitHub) | The *generator* behind rajeevw: scraper + authoritative column defs + a reference RF/XGBoost baseline (~0.72 acc, inflated by the red-corner imbalance). | - | Reference, not a separate dataset. |
 | **`komaksym/UFC-DataLab`** (GitHub) | Most modern/best-engineered; OCR-parses judges' scorecards (PaddleOCR); updated quarterly. | - | Only for a **judging/scorecard** project. |
 | `neelagiriaditya`, `cadelueker`, `rajaisrarkiani`, `fatismajli` (Kaggle) | Same ufcstats lineage, through 2025. **Audited 2026-06-25 → confirmed REDUNDANT** (see [DATASETS.md](docs/DATASETS.md)): no odds, no nationality, in-fight stats only, and the fighter career-rate table they ship already exists in our `raw_fighter_details.csv`. mdabbert is fresher (2026-03). | **No** | Skip - nothing they add. |
@@ -118,7 +118,7 @@ For **fighter-style clustering** you need a *fighter-level* table (one row per f
 
 **Problem formulation binds everything** - it determines which baselines and extensions are legal.
 
-### Problem formulations (a–z of what the chats raised)
+### Problem formulations (a-z of what the chats raised)
 | Formulation | Task | Notes |
 |---|---|---|
 | **Winner** (red vs blue) | binary clf | Standard/expected; most saturated publicly → only worth it with the leakage-audit + odds-benchmark twist. |
@@ -130,7 +130,7 @@ For **fighter-style clustering** you need a *fighter-level* table (one row per f
 | **Fight/round-type clustering** (grappling- vs striking-heavy bouts) | clustering | Less explored; softer conclusions. |
 | **Regression** (fight duration / sig. strikes / control time) | regression | Only framing that exercises the linear-regression/GD baseline. Underused but valid. |
 | **Judging / scorecard prediction** (JudgeAI-style) | clf/regression | Least-saturated, most distinctive; **needs `komaksym` scorecard data** + messier pipeline. |
-| **Beat-the-market** | layer on winner | Benchmark model vs de-vigged odds (§6). |
+| **Beat-the-market** | layer on winner | Benchmark model vs de-vigged odds (Section 6). |
 | **Anomaly / upset detection** | unsupervised | Thin as a *primary* narrative (no clean ground-truth label for "upset"); better as a sub-analysis. |
 | **DR-centric** (PCA/LDA as the star, Kernel PCA extension) | - | Better as an ablation inside another project than as the whole story; Kernel PCA only shines if linear PCA visibly fails. |
 
@@ -139,7 +139,7 @@ For **fighter-style clustering** you need a *fighter-level* table (one row per f
 ### Baselines (course-covered, from scratch)
 - **Classification:** Gaussian/Naive Bayes + LDA + QDA + kNN (clean linear-vs-quadratic-vs-instance-based contrast). Add perceptron / least-squares for a linear floor. KDE/Parzen-window classifier if density-based.
 - **Clustering:** k-means. **Regression:** least-squares + gradient descent (compare the two).
-- **⚠️ VERIFY:** chats also suggested *logistic regression via gradient descent* as a baseline - but logistic regression is **not** an explicit course directory, so confirm whether it counts as "covered" before using it as a baseline (it leans on the covered GD machinery, but may not qualify).
+- **RESOLVED - not used:** chats suggested *logistic regression via gradient descent* as a baseline, but it is **not** an explicit course directory, so we did not use it (LDA/QDA/kNN are enough).
 
 ### Extensions (from scratch, must match the task) - cost depends on whether it upgrades a base you already have
 - **Cheap (reuse homework code, ~a day):** weighted kNN (←kNN), regularized/shrinkage LDA (←LDA), k-means++ (←k-means), Kernel PCA (←PCA). Risk: can look *thin* given baselines were free → compensate with experimental depth.
@@ -183,8 +183,10 @@ General texts: Duda/Hart/Stork (*Pattern Classification*), Bishop (*PRML*), Hast
 ## 8. Status of earlier open tasks (see [TODO.md](docs/TODO.md) for live tasks)
 - ✅ Datasets downloaded + inspected → [DATASETS.md](docs/DATASETS.md).
 - ✅ Baselines ported into `src/baselines/` + validated vs sklearn (`tests/`).
-- ✅ Citation resolved (ACM, not IEEE) + ~63–67% ceiling grounded → [SOURCES.md](docs/SOURCES.md).
-- ⬜ Still open: does **logistic regression** count as a "covered" baseline? (not an explicit course dir.)
+- ✅ SAMME extension implemented from scratch + validated; eval metrics (`src/metrics.py`), naive baselines (`src/baselines/naive.py`), odds benchmark (`src/data/odds.py`), plotting helpers (`src/plotting.py`) added.
+- ✅ Data pipeline: B1 (load+label), B2 (features), B3 (symmetrize) done; B4 (chronological split + scaling) still pending.
+- ✅ Citation resolved (ACM, not IEEE) + ~63-67% ceiling grounded → [SOURCES.md](docs/SOURCES.md).
+- ✅ Resolved: logistic regression NOT used as a baseline (LDA/QDA/kNN are enough).
 
 ---
 
@@ -194,11 +196,12 @@ General texts: Duda/Hart/Stork (*Pattern Classification*), Bishop (*PRML*), Hast
 
 Current layout:
 ```
-src/baselines/      from-scratch course methods ✅ (validated vs sklearn)
-src/extension/      the from-scratch extension (TODO: SAMME-AdaBoost)
-src/data/           loading, cleaning, leakage-safe feature build (TODO)
+src/baselines/      from-scratch course methods ✅ (validated vs sklearn) + naive baselines ✅
+src/extension/      SAMME multiclass AdaBoost ✅ (validated vs sklearn)
+src/data/           load+label ✅, features+symmetrize ✅, odds benchmark ✅; split (TODO B4)
+src/metrics.py      from-scratch eval metrics ✅      src/plotting.py  figure helpers ✅
 notebooks/          01_eda  02_baselines  03_extension  04_results (stubs)
-tests/              unit/ + validate_baselines.py (integration runner)
+tests/              unit/ + validate_baselines.py (integration runner, 44/44)
 data/raw, data/processed   (gitignored)
 report/  slides/    write-up + presentation
 docs/               PROPOSAL · TODO · DATASETS · SOURCES

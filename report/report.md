@@ -62,10 +62,17 @@ We formulate the task as a single **multiclass classification problem over six c
 
 mdabbert Ultimate UFC Dataset: source, size (~7k fights, 2010-2026), key columns, pre-fight aggregation, what we exclude (`total_fight_time_secs`, result columns) and why. Weird outcomes dropped (with reasoning). (See DATASETS.md.)
 
-## 4. Exploratory data analysis - ⏳ stub (blocked on B2 + EDA notebook) - feeds: `notebooks/01_eda.ipynb`
+## 4. Exploratory data analysis - 🟡 drafted (C1/C2/C3 done; C2 confound is the highlight) - feeds: `notebooks/01_eda.ipynb`
 
-Class balance (6 classes + the 3-method view), weight-class/stance breakdowns, feature distributions, and the controlled **red-corner confound** analysis. Leakage sanity check (debut rows have empty priors).  
-Figures: `figures/class_balance.png`, `figures/method_distribution.png`, `figures/red_corner_confound.png`, `figures/feature_correlations.png`.
+The dataset has 6,911 fights after dropping weird outcomes, spread across the six joint classes.
+
+**Class balance.** The classes are imbalanced: `Red-DEC` is the largest (1,974 fights) and `Blue-SUB` the smallest (485), roughly a fourfold spread. Broken down, the winner is Red 57.7% of the time and Blue 42.3%, and the method of victory is decision 49.6%, KO/TKO 32.2%, and submission 18.2%. Because of this imbalance we judge models on per-class and macro F1 and log-loss rather than raw accuracy, which a model could inflate by always predicting a decision. A method-by-weight-class breakdown shows the expected pattern that heavier divisions finish more often by knockout. (Figures: `class_balance.png`, `method_by_weightclass.png`.)
+
+**The red-corner confound.** Red wins 57.7% of fights, which at first looks like a "red advantage." It is not: the red corner is systematically assigned to the favourite (red is the betting favourite in 59.5% of fights). Conditioning on the market makes this clear: red wins 69.6% of the time when it is the favourite but only 40.4% when it is the underdog, while the favourite wins 65.5% of fights regardless of corner. So the corner is a proxy for who the market favours, and the colour itself carries almost no information. This is a selection effect, not a causal one, and it drives two design choices: we **symmetrize the corners** (randomly swap red/blue to a 50/50 base rate) so the models cannot exploit the shortcut, and we measure the naive "always-red" baseline only on the original, un-symmetrized corners. (Figure: `red_corner_confound.png`.)
+
+**Feature distributions and correlations.** The difference features (red minus blue) are roughly centred, as expected once corners are balanced. Correlations among them are mostly low, with two intuitive exceptions: reach and height differences correlate at 0.63, and career KO and overall-win differences at 0.63. The features are therefore largely non-redundant, which is reassuring for the covariance-based baselines (LDA and QDA). (Figures: `feature_distributions.png`, `feature_correlations.png`.)
+
+**Leakage sanity check.** Career-aggregate features are only safe if they are computed from a fighter's prior bouts and exclude the one being predicted. We confirm this holds: experienced fighters have complete pre-fight averages (0% missing), whereas debutants (no prior UFC record) have mostly empty priors (~75% missing). If the current bout had leaked into the aggregates, debutants would already show statistics; they do not. The aggregates are genuinely pre-fight, so the row a model sees does not contain its own outcome.
 
 ## 5. Methods
 

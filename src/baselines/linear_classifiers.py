@@ -1,6 +1,6 @@
 """Linear discriminant classifiers - ported from `03_least_squares`.
 
-Perceptron (single-sample), Ho–Kashyap, and the least-squares/MSE classifier.
+Perceptron (single-sample), Ho-Kashyap, and the least-squares/MSE classifier.
 All use the course's augment-and-normalize trick (append 1, negate class 2),
 so they are inherently **2-class**; use one-vs-rest for multiclass. Faithful to
 the course bodies, wrapped sklearn-style for binary labels.
