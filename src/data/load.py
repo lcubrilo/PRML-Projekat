@@ -19,24 +19,24 @@ METHOD_MAP = {"KO/TKO": "KO", "SUB": "SUB", "U-DEC": "DEC", "S-DEC": "DEC", "M-D
 
 
 def load_raw(path: Path = RAW) -> pd.DataFrame:
-    """Read the CSV.  TODO: return pd.read_csv(path)."""
-    raise NotImplementedError
+    return pd.read_csv(path)
 
 
 def build_label(df: pd.DataFrame) -> pd.Series:
-    """Joint 6-class label, e.g. 'Red-KO', 'Blue-DEC'.
-    TODO:
-      1. mask = df.Winner.isin(['Red','Blue']) & df.finish.isin(METHOD_MAP)
-      2. method = df.loc[mask,'finish'].map(METHOD_MAP)
-      3. return df.loc[mask,'Winner'] + '-' + method
-    Weird outcomes drop out automatically (they fail the mask).
-    """
-    raise NotImplementedError
+    mask = (
+        df["Winner"].isin(["Red", "Blue"])
+        & df["finish"].isin(METHOD_MAP)
+    )
+
+    method = df.loc[mask, "finish"].map(METHOD_MAP)
+    return df.loc[mask, "Winner"] + "-" + method
 
 
 def load_clean() -> tuple[pd.DataFrame, pd.Series]:
-    """Return (df_features_pool, label) on the SAME (filtered) index.
-    TODO: load_raw -> build_label -> align rows -> drop LEAK_COLS from the feature pool.
-    Keep `date` (needed for the chronological split) and identifiers for EDA.
-    """
-    raise NotImplementedError
+    df = load_raw()
+    y = build_label(df)
+
+    df_clean = df.loc[y.index].copy()
+    X_pool = df_clean.drop(columns=LEAK_COLS, errors="ignore")
+
+    return X_pool, y
